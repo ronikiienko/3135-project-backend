@@ -1608,6 +1608,8 @@ Deletion is not allowed if user has active rental, which means one of following 
 Additionally, if user is shelter, close all listings
 All ongoing reports opened for this user will be automatically marked resolved
 
+Session should be destroyed after this
+
 Payload:
 ```typescript
 const payloadSchema = z.object({});
