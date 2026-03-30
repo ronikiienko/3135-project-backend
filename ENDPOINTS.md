@@ -63,7 +63,8 @@ You should critically think about other edge cases where FORBIDDEN should be ret
 Common API types are defined here:
 ```typescript
 const idSchema = z.number();
-const timeSchema = z.iso.datetime();
+const timestampSchema = z.iso.datetime();
+const moneySchema = z.number().min(0);
 const passwordSchema = z.string().min(8);
 // We should store it as 0 to 1 float even if we display it as start
 // this simplified out logic and makes it more consistent.
@@ -91,7 +92,7 @@ const shelterSchema = userSchema.extend({
     location: z.string(),
     description: z.string(),
     rating: ratingSchema.nullable(),
-    suspended_until: timeSchema.nullable(),
+    suspended_until: timestampSchema.nullable(),
 });
 
 const renterSchema = userSchema.extend({
@@ -100,7 +101,7 @@ const renterSchema = userSchema.extend({
     location: z.string(),
     description: z.string(),
     rating: ratingSchema.nullable(),
-    suspended_until: timeSchema.nullable(),
+    suspended_until: timestampSchema.nullable(),
 });
 
 const listingSchema = z.object({
