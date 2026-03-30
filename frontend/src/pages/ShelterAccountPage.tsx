@@ -14,7 +14,7 @@ import {
   Paper,
 } from '@mantine/core';
 import { getShelterMe, Shelter } from '../api/shelter';
-import { BASE_URL } from '../api/config';
+import { AVATARS_URL } from '../api/config';
 
 const ShelterAccountPage: React.FC = () => {
   const [shelter, setShelter] = useState<Shelter | null>(null);
@@ -52,7 +52,7 @@ const ShelterAccountPage: React.FC = () => {
         <Stack>
           <Group>
             <Avatar
-              src={shelter.avatar_filename ? `${BASE_URL}/uploads/${shelter.avatar_filename}` : undefined}
+              src={shelter.avatar_filename ? `${AVATARS_URL}/${shelter.avatar_filename}` : undefined}
               size="xl"
               radius="xl"
               color="blue"
@@ -96,7 +96,7 @@ const ShelterAccountPage: React.FC = () => {
                 {shelter.profile_images.map((filename) => (
                   <Image
                     key={filename}
-                    src={`${BASE_URL}/uploads/${filename}`}
+                    src={`${AVATARS_URL}/${filename}`}
                     radius="md"
                     fit="cover"
                     h={120}

@@ -46,6 +46,10 @@ async function postMultipart(
   return fetch(url, { method: 'POST', body: form, credentials: 'include' });
 }
 
+export async function logout() {
+  return fetch(`${BASE_URL}/auth/logout.php`, { method: 'POST', credentials: 'include' });
+}
+
 export async function login(payload: LoginPayload) {
   const res = await fetch(`${BASE_URL}/auth/login.php`, {
     method: 'POST',

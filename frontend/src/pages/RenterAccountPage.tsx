@@ -13,7 +13,7 @@ import {
   Paper,
 } from '@mantine/core';
 import { getRenterMe, Renter } from '../api/renter';
-import { BASE_URL } from '../api/config';
+import { AVATARS_URL } from '../api/config';
 
 const RenterAccountPage: React.FC = () => {
   const [renter, setRenter] = useState<Renter | null>(null);
@@ -51,7 +51,7 @@ const RenterAccountPage: React.FC = () => {
         <Stack>
           <Group>
             <Avatar
-              src={renter.avatar_filename ? `${BASE_URL}/uploads/${renter.avatar_filename}` : undefined}
+              src={renter.avatar_filename ? `${AVATARS_URL}/${renter.avatar_filename}` : undefined}
               size="xl"
               radius="xl"
               color="blue"
@@ -88,7 +88,7 @@ const RenterAccountPage: React.FC = () => {
                 {renter.profile_images.map((filename) => (
                   <Image
                     key={filename}
-                    src={`${BASE_URL}/uploads/${filename}`}
+                    src={`${AVATARS_URL}/${filename}`}
                     radius="md"
                     fit="cover"
                     h={120}

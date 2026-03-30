@@ -36,6 +36,7 @@ const LoginPage: React.FC = () => {
         else if (data.error === 'PAYLOAD_MALFORMED') setError('Invalid input.');
         else setError('Something went wrong. Please try again.');
       } else {
+        localStorage.setItem('role', role);
         navigate('/dashboard');
       }
     } catch {
