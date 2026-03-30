@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ShelterAccountPage from './pages/ShelterAccountPage';
 import RenterAccountPage from './pages/RenterAccountPage';
+import AdminAccountPage from './pages/AdminAccountPage';
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -22,6 +23,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/shelter/account" element={<ShelterAccountPage />} />
           <Route path="/renter/account" element={<RenterAccountPage />} />
+          <Route path="/admin/account" element={<AdminAccountPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

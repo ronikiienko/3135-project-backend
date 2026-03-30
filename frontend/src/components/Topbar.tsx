@@ -3,6 +3,7 @@ import { Group, Avatar, Text, Box, Menu, Badge } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { getRenterMe } from '../api/renter';
 import { getShelterMe } from '../api/shelter';
+import { getAdminMe } from '../api/admin';
 import { logout } from '../api/auth';
 import { AVATARS_URL } from '../api/config';
 
@@ -22,6 +23,10 @@ const Topbar: React.FC = () => {
       getRenterMe().then(({ renter }) => {
         if (renter) setUser({ name: `${renter.fName} ${renter.lName}`, avatarFilename: renter.avatar_filename });
       });
+    } else if (role === 'ADMIN') {
+      getAdminMe().then(({ admin }) => {
+        if (admin) setUser({ name: admin.name, avatarFilename: admin.avatar_filename });
+      });
     }
   }, []);
 
@@ -31,13 +36,13 @@ const Topbar: React.FC = () => {
     navigate('/login');
   };
 
-  const accountPath = role === 'SHELTER' ? '/shelter/account' : '/renter/account';
+  const accountPath = role === 'SHELTER' ? '/shelter/account' : role === 'ADMIN' ? '/admin/account' : '/renter/account';
   const avatarSrc = user?.avatarFilename ? `${AVATARS_URL}/${user.avatarFilename}` : undefined;
 
   return (
     <Box px="lg" py="sm" style={{ borderBottom: '1px solid #e9ecef' }}>
       <Group justify="space-between">
-        <Text fw={600}>Dashboard</Text>
+        <Text fw={600} style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>Dashboard</Text>
         <Group gap="md">
           {role === 'SHELTER' && user?.isVerified === false && (
             <Badge color="yellow" variant="light">Pending verification</Badge>

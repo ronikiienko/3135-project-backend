@@ -15,6 +15,7 @@ import {
 } from '@mantine/core';
 import { getShelterMe, Shelter } from '../api/shelter';
 import { AVATARS_URL } from '../api/config';
+import Topbar from '../components/Topbar';
 
 const ShelterAccountPage: React.FC = () => {
   const [shelter, setShelter] = useState<Shelter | null>(null);
@@ -47,7 +48,9 @@ const ShelterAccountPage: React.FC = () => {
   }
 
   return (
-    <Container my={40}>
+    <>
+      <Topbar />
+      <Container my={40}>
       <Paper withBorder shadow="sm" p="xl" radius="md">
         <Stack>
           <Group>
@@ -108,6 +111,7 @@ const ShelterAccountPage: React.FC = () => {
         </Stack>
       </Paper>
     </Container>
+    </>
   );
 };
 

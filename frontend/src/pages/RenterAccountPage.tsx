@@ -14,6 +14,7 @@ import {
 } from '@mantine/core';
 import { getRenterMe, Renter } from '../api/renter';
 import { AVATARS_URL } from '../api/config';
+import Topbar from '../components/Topbar';
 
 const RenterAccountPage: React.FC = () => {
   const [renter, setRenter] = useState<Renter | null>(null);
@@ -46,7 +47,9 @@ const RenterAccountPage: React.FC = () => {
   }
 
   return (
-    <Container my={40}>
+    <>
+      <Topbar />
+      <Container my={40}>
       <Paper withBorder shadow="sm" p="xl" radius="md">
         <Stack>
           <Group>
@@ -100,6 +103,7 @@ const RenterAccountPage: React.FC = () => {
         </Stack>
       </Paper>
     </Container>
+    </>
   );
 };
 
