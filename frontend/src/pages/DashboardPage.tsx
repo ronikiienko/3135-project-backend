@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Title, SimpleGrid, Card, Text, Button, Group, Loader, Image } from '@mantine/core';
+import { Container, Title, SimpleGrid, Card, Text, Button, Group, Loader, Image, Stack, Badge, Divider } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import CreateListingModal from '../components/CreateListingModal';
 import { Listing, getListings } from '../api/listing';
 import { getShelterMe } from '../api/shelter';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
+import { Rental, getRentals } from '../api/rental';
 import { LISTING_IMAGES_URL } from '../api/config';
 
 const AdminDashboard: React.FC = () => {
@@ -23,17 +24,40 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
+const statusColor: Record<string, string> = {
+  REQUESTED: 'yellow',
+  SHELTER_DECLINED: 'red',
+  PAYMENT_PENDING: 'blue',
+  PAYMENT_EXPIRED: 'red',
+  RENTER_DECLINED: 'red',
+  SHELTER_WITHDREW: 'red',
+  PAID: 'green',
+  DISPUTE: 'orange',
+  PEACEFULLY_TERMINATED: 'gray',
+  DISPUTE_IN_FAVOR_OF_SHELTER: 'green',
+  DISPUTE_IN_FAVOR_OF_RENTER: 'red',
+  SHELTER_CANCELLED: 'red',
+};
+
 const ShelterDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [rentals, setRentals] = useState<Rental[]>([]);
+  const [listingMap, setListingMap] = useState<Map<number, Listing>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getShelterMe().then(({ shelter }) => {
       if (!shelter) return;
-      getListings().then(({ listings: all }) => {
-        if (all) setListings(all.filter((l) => l.shelter_id === shelter.id));
+      Promise.all([
+        getListings(),
+        getRentals(),
+      ]).then(([listingsData, rentalsData]) => {
+        const own = (listingsData.listings ?? []).filter((l) => l.shelter_id === shelter.id);
+        setListings(own);
+        setListingMap(new Map(own.map((l) => [l.id, l])));
+        setRentals(rentalsData.rentals ?? []);
         setLoading(false);
       });
     });
@@ -41,32 +65,63 @@ const ShelterDashboard: React.FC = () => {
 
   const handleCreated = (listing: Listing) => {
     setListings((prev) => [listing, ...prev]);
+    setListingMap((prev) => new Map(prev).set(listing.id, listing));
   };
+
+  const pendingRentals = rentals.filter((r) => r.status === 'REQUESTED');
 
   return (
     <Container my={40}>
-      <Group justify="space-between" mb="lg">
-        <Title order={2}>Your Listings</Title>
-        <Button onClick={() => setModalOpen(true)}>Create Listing</Button>
-      </Group>
+      {loading ? <Loader /> : (
+        <Stack gap="xl">
+          {pendingRentals.length > 0 && (
+            <Stack gap="sm">
+              <Group gap="sm">
+                <Title order={2}>Rental Requests</Title>
+                <Badge color="yellow">{pendingRentals.length}</Badge>
+              </Group>
+              <Stack gap="xs">
+                {pendingRentals.map((r) => (
+                  <Card key={r.id} withBorder padding="sm" radius="md">
+                    <Group justify="space-between">
+                      <Stack gap={2}>
+                        <Text fw={600}>{listingMap.get(r.listing_id)?.name ?? `Listing #${r.listing_id}`}</Text>
+                        <Text size="sm" c="dimmed">Renter #{r.renter_id}</Text>
+                      </Stack>
+                      <Badge color={statusColor[r.status] ?? 'gray'}>{r.status}</Badge>
+                    </Group>
+                  </Card>
+                ))}
+              </Stack>
+              <Divider />
+            </Stack>
+          )}
 
-      {loading ? <Loader /> : listings.length === 0 ? (
-        <Text c="dimmed">No listings yet. Create your first one!</Text>
-      ) : (
-        <SimpleGrid cols={3}>
-          {listings.map((l) => (
-            <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
-              {l.listing_images[0] && (
-                <Card.Section mb="sm">
-                  <Image src={`${LISTING_IMAGES_URL}/${l.listing_images[0]}`} h={160} fit="contain" />
-                </Card.Section>
-              )}
-              <Text fw={600}>{l.name}</Text>
-              <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
-              <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
-            </Card>
-          ))}
-        </SimpleGrid>
+          <Stack gap="sm">
+            <Group justify="space-between">
+              <Title order={2}>Your Listings</Title>
+              <Button onClick={() => setModalOpen(true)}>Create Listing</Button>
+            </Group>
+            {listings.length === 0 ? (
+              <Text c="dimmed">No listings yet. Create your first one!</Text>
+            ) : (
+              <SimpleGrid cols={3}>
+                {listings.map((l) => (
+                  <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
+                    {l.listing_images[0] && (
+                      <Card.Section mb="sm">
+                        <Image src={`${LISTING_IMAGES_URL}/${l.listing_images[0]}`} h={160} fit="contain" />
+                      </Card.Section>
+                    )}
+                    <Text fw={600}>{l.name}</Text>
+                    <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
+                    <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            )}
+          </Stack>
+        </Stack>
       )}
 
       <CreateListingModal opened={modalOpen} onClose={() => setModalOpen(false)} onCreated={handleCreated} />

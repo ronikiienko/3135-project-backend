@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper, Anchor } from '@mantine/core';
+import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper, Anchor, Button } from '@mantine/core';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import Topbar from '../components/Topbar';
 import { getListing, Listing } from '../api/listing';
+import { initiateRental } from '../api/rental';
 import { LISTING_IMAGES_URL } from '../api/config';
 
 const ListingPage: React.FC = () => {
@@ -12,6 +13,8 @@ const ListingPage: React.FC = () => {
   const [listing, setListing] = useState<Listing | null>(null);
   const [shelter, setShelter] = useState<ShelterPublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [requesting, setRequesting] = useState(false);
+  const [requested, setRequested] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -85,9 +88,18 @@ const ListingPage: React.FC = () => {
             </Stack>
 
             {role === 'RENTER' && !listing.is_closed && (
-              <Group>
-                {/* Request Rental button goes here */}
-              </Group>
+              <Button
+                onClick={async () => {
+                  setRequesting(true);
+                  const data = await initiateRental(listing.id);
+                  setRequesting(false);
+                  if (!data.error) setRequested(true);
+                }}
+                loading={requesting}
+                disabled={requested}
+              >
+                {requested ? 'Request Sent' : 'Request Rental'}
+              </Button>
             )}
 
             {role === 'SHELTER' && !listing.is_closed && (

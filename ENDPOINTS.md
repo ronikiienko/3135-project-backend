@@ -543,10 +543,11 @@ Authenticated.
 Roles allowed: renter.
 
 Logic: initiates rental for listing. Should create rental with "REQUESTED" status.
-We do NOT enforce that there are no other rentals for the same listing.
+We do NOT enforce that there are no other rentals for the same listing from different renters.
 Only not deleted renters can initiate rentals (add check everywhere for not deleted users).
 Listing must not be closed (if closed, then forbidden)
-Forbidden if renter is suspended
+Forbidden if renter is suspended.
+Forbidden if renter already has an active rental for this listing (status is REQUESTED, PAYMENT_PENDING, or PAID).
 
 Payload:
 ```typescript
