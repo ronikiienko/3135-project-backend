@@ -1,4 +1,4 @@
-CREATE TABLE user
+CREATE TABLE users
 (
     id              int AUTO_INCREMENT,
     PRIMARY KEY (id),
@@ -8,15 +8,15 @@ CREATE TABLE user
     is_deleted      boolean      DEFAULT false
 ) COLLATE utf8mb4_general_ci;
 
-CREATE TABLE user_image
+CREATE TABLE user_images
 (
     filename varchar(255),
     PRIMARY KEY (filename),
     user_id  int NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user (id)
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE shelter
+CREATE TABLE shelters
 (
     id              int AUTO_INCREMENT,
     PRIMARY KEY (id),
@@ -26,10 +26,10 @@ CREATE TABLE shelter
     description     text         NOT NULL,
     rating          decimal(3, 2),
     suspended_until datetime,
-    FOREIGN KEY (id) REFERENCES user (id)
+    FOREIGN KEY (id) REFERENCES users (id)
 );
 
-CREATE TABLE renter
+CREATE TABLE renters
 (
     id              int AUTO_INCREMENT,
     PRIMARY KEY (id),
@@ -39,31 +39,31 @@ CREATE TABLE renter
     description     text         NOT NULL,
     rating          decimal(3, 2),
     suspended_until datetime,
-    FOREIGN KEY (id) REFERENCES user (id)
+    FOREIGN KEY (id) REFERENCES users (id)
 );
 
-CREATE TABLE admin
+CREATE TABLE admins
 (
     id                int AUTO_INCREMENT,
     PRIMARY KEY (id),
     name              varchar(255) NOT NULL,
     can_create_admins boolean      DEFAULT false,
-    FOREIGN KEY (id) REFERENCES user (id)
+    FOREIGN KEY (id) REFERENCES users (id)
 );
 
-CREATE TABLE admin_token
+CREATE TABLE admin_tokens
 (
     token_hash varchar(255),
     PRIMARY KEY (token_hash),
     expires_at datetime NOT NULL
 );
 
-CREATE TABLE listing
+CREATE TABLE listings
 (
     id          int AUTO_INCREMENT,
     PRIMARY KEY (id),
     shelter_id  int           NOT NULL,
-    FOREIGN KEY (shelter_id) REFERENCES shelter (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (shelter_id) REFERENCES shelters (id) ON UPDATE CASCADE ON DELETE CASCADE,
     name        varchar(100)  NOT NULL,
     species     varchar(100)  NOT NULL,
     age         tinyint       NOT NULL,
@@ -72,26 +72,26 @@ CREATE TABLE listing
     rate        decimal(10, 2) NOT NULL
 );
 
-CREATE TABLE listing_image
+CREATE TABLE listing_images
 (
     filename   varchar(255),
     PRIMARY KEY (filename),
     listing_id int NOT NULL,
-    FOREIGN KEY (listing_id) REFERENCES listing (id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (listing_id) REFERENCES listings (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE rental
+CREATE TABLE rentals
 (
     id                    int AUTO_INCREMENT,
     PRIMARY KEY (id),
     shelter_id            int NOT NULL,
-    FOREIGN KEY (shelter_id) REFERENCES shelter (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (shelter_id) REFERENCES shelters (id) ON UPDATE CASCADE ON DELETE CASCADE,
     renter_id             int NOT NULL,
-    FOREIGN KEY (renter_id) REFERENCES renter (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (renter_id) REFERENCES renters (id) ON UPDATE CASCADE ON DELETE CASCADE,
     listing_id            int NOT NULL,
-    FOREIGN KEY (listing_id) REFERENCES listing (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (listing_id) REFERENCES listings (id) ON UPDATE CASCADE ON DELETE CASCADE,
     assigned_admin_id     int,
-    FOREIGN KEY (assigned_admin_id) REFERENCES admin (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (assigned_admin_id) REFERENCES admins (id) ON UPDATE CASCADE ON DELETE SET NULL,
     rental_begins         datetime,
     rental_ends           datetime,
     terms_proposed_at     datetime,
@@ -114,39 +114,39 @@ CREATE TABLE rental
     stripe_transaction_id varchar(255)
 );
 
-CREATE TABLE report
+CREATE TABLE reports
 (
     id          int AUTO_INCREMENT,
     PRIMARY KEY (id),
     reporter_id int,
-    FOREIGN KEY (reporter_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (reporter_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
     reported_id int NOT NULL,
-    FOREIGN KEY (reported_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (reported_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
     body        text         NOT NULL,
     reason      varchar(255) NOT NULL,
     is_resolved boolean      DEFAULT false
 );
 
-CREATE TABLE message
+CREATE TABLE messages
 (
     id           int AUTO_INCREMENT,
     PRIMARY KEY (id),
     sender_id    int NOT NULL,
-    FOREIGN KEY (sender_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (sender_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
     recipient_id int,
-    FOREIGN KEY (recipient_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (recipient_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
     created_at   timestamp DEFAULT CURRENT_TIMESTAMP,
     body         text      NOT NULL
 );
 
-CREATE TABLE review
+CREATE TABLE reviews
 (
     id          int AUTO_INCREMENT,
     PRIMARY KEY (id),
     reviewer_id int,
-    FOREIGN KEY (reviewer_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (reviewer_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
     reviewed_id int NOT NULL,
-    FOREIGN KEY (reviewed_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (reviewed_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
     body        text          NOT NULL,
     score       decimal(3, 2) NOT NULL
 );
