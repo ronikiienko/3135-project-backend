@@ -40,7 +40,7 @@ async function postMultipart(
   }
   if (multiFiles) {
     for (const [key, files] of Object.entries(multiFiles)) {
-      for (const file of files) form.append(key, file);
+      for (const file of files) form.append(`${key}[]`, file);
     }
   }
   return fetch(url, { method: 'POST', body: form, credentials: 'include' });

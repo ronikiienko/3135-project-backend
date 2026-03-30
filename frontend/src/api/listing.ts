@@ -20,6 +20,17 @@ export interface CreateListingPayload {
   rate: number;
 }
 
+
+export async function getListing(listingId: number): Promise<{ listing?: Listing; error?: string }> {
+  const res = await fetch(`${BASE_URL}/listing.php?listingId=${listingId}`, { credentials: 'include' });
+  return res.json();
+}
+
+export async function getListings(): Promise<{ listings?: Listing[]; error?: string }> {
+  const res = await fetch(`${BASE_URL}/listings.php`, { credentials: 'include' });
+  return res.json();
+}
+
 export async function createListing(
   payload: CreateListingPayload,
   listingImages?: File[],
@@ -27,7 +38,7 @@ export async function createListing(
   const form = new FormData();
   form.append('metadata', JSON.stringify(payload));
   if (listingImages) {
-    for (const file of listingImages) form.append('listing_images', file);
+    for (const file of listingImages) form.append('listing_images[]', file);
   }
   const res = await fetch(`${BASE_URL}/shelter/createListing.php`, {
     method: 'POST',

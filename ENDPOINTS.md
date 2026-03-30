@@ -490,7 +490,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /admin/verifyShelter/:shelterId
+### PATCH /admin/verifyShelter?shelterId=
 Authenticated.
 
 Roles allowed: admin
@@ -537,7 +537,7 @@ const responseSchema = z.union([
 
 ## Rental
 
-### POST /renter/initiateRental/:listingId
+### POST /renter/initiateRental?listingId=
 Authenticated.
 
 Roles allowed: renter.
@@ -583,7 +583,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /shelter/respondToRentalRequest/:rentalId
+### PATCH /shelter/respondToRentalRequest?rentalId=
 Authenticated.
 
 Roles allowed: shelter.
@@ -638,7 +638,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /shelter/widthdrawFromRental/:rentalId
+### PATCH /shelter/widthdrawFromRental?rentalId=
 Authenticated.
 
 Roles allowed: shelter.
@@ -685,7 +685,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /renter/respondToRentalTerms/:rentalId
+### PATCH /renter/respondToRentalTerms?rentalId=
 Authenticated.
 
 Roles allowed: renter.
@@ -742,7 +742,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /shelter/cancelRental/:rentalId
+### PATCH /shelter/cancelRental?rentalId=
 Authenticated.
 
 Roles allowed: shelter.
@@ -790,7 +790,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /rental/dispute/:rentalId
+### PATCH /rental/dispute?rentalId=
 Authenticated.
 
 Roles allowed: shelter or renter.
@@ -840,7 +840,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /admin/assignDispute/:rentalId
+### PATCH /admin/assignDispute?rentalId=
 Authenticated.
 
 Roles allowed: admin.
@@ -885,7 +885,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /admin/resolveDispute/:rentalId
+### PATCH /admin/resolveDispute?rentalId=
 Authenticated.
 
 Roles allowed: admin
@@ -1011,7 +1011,7 @@ Backend should run periodic code that:
 
 ## Review
 
-### POST /review/createReview/:reviewedId
+### POST /review/createReview?reviewedId=
 Authenticated.
 
 Roles allowed: shelter or renter
@@ -1062,7 +1062,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### GET /reviews/:reviewedId
+### GET /reviews?reviewedId=
 Authenticated.
 
 Roles allowed: all
@@ -1097,15 +1097,15 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /review/:reviewId 
+### PATCH /review?reviewId=
 NOT A PRIORITY FOR NOW
 
-### DELETE /review/:reviewId
+### DELETE /review?reviewId=
 NOT A PRIORITY FOR NOW
 
 ## Messaging
 
-### POST /message/send/:recipientId
+### POST /message/send?recipientId=
 Authenticated.
 
 Roles allowed: all
@@ -1152,7 +1152,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### GET /messages/:correspondentId
+### GET /messages?correspondentId=
 Authenticated.
 
 Roles allowed: all
@@ -1192,7 +1192,7 @@ const responseSchema = z.union([
 
 ## Report
 
-### POST /report/createReport/:reportedId
+### POST /report/createReport?reportedId=
 Authenticated.
 
 Roles allowed: renter or shelter
@@ -1278,7 +1278,7 @@ const responseSchema = z.union([
 ])
 ```
 
-### PATCH /admin/resolveReport/:reportId
+### PATCH /admin/resolveReport?reportId=
 Authenticated.
 
 Roles allowed: admin
@@ -1379,7 +1379,7 @@ const responseSchema = z.union([
 ]);
 ```
 
-### POST /shelter/closeListing/:listingId
+### POST /shelter/closeListing?listingId=
 Authenticated.
 
 Roles allowed: shelter.
@@ -1420,8 +1420,46 @@ const responseSchema = z.union([
 ]);
 ```
 
-### PATCH /shelter/listing/:listingId
+### PATCH /shelter/listing?listingId=
 NOT A PRIORITY FOR NOW
+
+### GET /listing?listingId=
+Authenticated.
+
+Roles allowed: all
+
+Logic: returns a single listing by id. Returns 404 if not found.
+
+Payload:
+```typescript
+const payloadSchema = z.object({});
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({
+        listing: listingSchema,
+    }),
+    // status: 401
+    z.object({
+        error: z.literal("UNAUTHENTICATED")
+    }),
+    // status: 404
+    z.object({
+        error: z.literal("LISTING_NOT_FOUND")
+    }),
+    // status: 400
+    z.object({
+        error: z.literal("PAYLOAD_MALFORMED")
+    }),
+    // status: 500
+    z.object({
+        error: z.literal("INTERNAL_SERVER")
+    }),
+]);
+```
 
 ### GET /listings
 Authenticated.
@@ -1577,7 +1615,7 @@ NOT A PRIORITY FOR NOW
 
 ## Profiles
 
-### GET /profile/:userId
+### GET /profile?userId=
 Authenticated.
 
 Roles allowed: all
@@ -1619,7 +1657,7 @@ const responseSchema = z.union([
 
 ## Image serving
 
-### GET /uploads/:filename
+### GET /uploads?filename=
 Not authenticated (we don't have any sensitive images)
 
 Logic: serves image with filename.
