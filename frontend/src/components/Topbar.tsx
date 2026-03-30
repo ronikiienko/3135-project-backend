@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Group, Avatar, Text, Box, Menu } from '@mantine/core';
+import { Group, Avatar, Text, Box, Menu, Badge } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { getRenterMe } from '../api/renter';
 import { getShelterMe } from '../api/shelter';
 import { logout } from '../api/auth';
 import { AVATARS_URL } from '../api/config';
 
-type UserInfo = { name: string; avatarFilename: string | null };
+type UserInfo = { name: string; avatarFilename: string | null; isVerified?: boolean };
 
 const Topbar: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -16,7 +16,7 @@ const Topbar: React.FC = () => {
   useEffect(() => {
     if (role === 'SHELTER') {
       getShelterMe().then(({ shelter }) => {
-        if (shelter) setUser({ name: shelter.name, avatarFilename: shelter.avatar_filename });
+        if (shelter) setUser({ name: shelter.name, avatarFilename: shelter.avatar_filename, isVerified: shelter.is_verified });
       });
     } else if (role === 'RENTER') {
       getRenterMe().then(({ renter }) => {
@@ -38,21 +38,26 @@ const Topbar: React.FC = () => {
     <Box px="lg" py="sm" style={{ borderBottom: '1px solid #e9ecef' }}>
       <Group justify="space-between">
         <Text fw={600}>Dashboard</Text>
-        <Menu position="bottom-end">
-          <Menu.Target>
-            <Group gap="sm" style={{ cursor: 'pointer' }}>
-              <Text size="sm">{user?.name ?? ''}</Text>
-              <Avatar src={avatarSrc} radius="xl" size="md" color="blue">
-                {!avatarSrc && user?.name?.[0]}
-              </Avatar>
-            </Group>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item onClick={() => navigate(accountPath)}>Account</Menu.Item>
-            <Menu.Divider />
-            <Menu.Item color="red" onClick={handleLogout}>Log out</Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+        <Group gap="md">
+          {role === 'SHELTER' && user?.isVerified === false && (
+            <Badge color="yellow" variant="light">Pending verification</Badge>
+          )}
+          <Menu position="bottom-end">
+            <Menu.Target>
+              <Group gap="sm" style={{ cursor: 'pointer' }}>
+                <Text size="sm">{user?.name ?? ''}</Text>
+                <Avatar src={avatarSrc} radius="xl" size="md" color="blue">
+                  {!avatarSrc && user?.name?.[0]}
+                </Avatar>
+              </Group>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={() => navigate(accountPath)}>Account</Menu.Item>
+              <Menu.Divider />
+              <Menu.Item color="red" onClick={handleLogout}>Log out</Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
       </Group>
     </Box>
   );
