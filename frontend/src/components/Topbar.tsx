@@ -51,6 +51,7 @@ const Topbar: React.FC = () => {
             <Menu.Target>
               <Group gap="sm" style={{ cursor: 'pointer' }}>
                 <Text size="sm">{user?.name ?? ''}</Text>
+                {role && <Badge variant="light">{role}</Badge>}
                 <Avatar src={avatarSrc} radius="xl" size="md" color="blue">
                   {!avatarSrc && user?.name?.[0]}
                 </Avatar>

@@ -14,7 +14,7 @@ import {
   Paper,
 } from '@mantine/core';
 import { getShelterMe, Shelter } from '../api/shelter';
-import { AVATARS_URL } from '../api/config';
+import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
 import Topbar from '../components/Topbar';
 
 const ShelterAccountPage: React.FC = () => {
@@ -99,7 +99,7 @@ const ShelterAccountPage: React.FC = () => {
                 {shelter.profile_images.map((filename) => (
                   <Image
                     key={filename}
-                    src={`${AVATARS_URL}/${filename}`}
+                    src={`${PROFILE_IMAGES_URL}/${filename}`}
                     radius="md"
                     fit="cover"
                     h={120}
