@@ -4,7 +4,12 @@ function save_file(array $file, string $subdir): string
 {
     $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     $filename = bin2hex(random_bytes(16)) . ($ext ? ".$ext" : '');
-    $dest     = __DIR__ . '/../public/' . $subdir . '/' . $filename;
+    $dir  = __DIR__ . '/../public/' . $subdir;
+    $dest = $dir . '/' . $filename;
+
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
 
     if (!move_uploaded_file($file['tmp_name'], $dest)) {
         error_response('INTERNAL_SERVER', 500);
