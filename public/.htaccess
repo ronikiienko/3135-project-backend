@@ -1,0 +1,4 @@
+Allow from all
+
+# Prevent executing uploaded files as PHP
+php_flag engine off
