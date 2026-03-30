@@ -12,6 +12,10 @@ if (!is_array($metadata)) {
     error_response('PAYLOAD_MALFORMED', 400);
 }
 
+if (!isset($metadata['password']) || strlen($metadata['password']) < 8) {
+    error_response('PAYLOAD_MALFORMED', 400);
+}
+
 $db = get_db();
 
 $stmt = $db->prepare('

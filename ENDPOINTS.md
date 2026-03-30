@@ -64,7 +64,7 @@ Common API types are defined here:
 ```typescript
 const idSchema = z.number();
 const timestampSchema = z.iso.datetime();
-const moneySchema = z.number().min(0);
+const moneySchema = z.number().min(0); // monetary value in USD
 const passwordSchema = z.string().min(8);
 // We should store it as 0 to 1 float even if we display it as start
 // this simplified out logic and makes it more consistent.
@@ -112,7 +112,7 @@ const listingSchema = z.object({
     age: z.number(),
     description: z.string(),
     is_closed: z.boolean(),
-    rate: moneySchema,
+    rate: moneySchema, // hourly rate in USD
     listing_images: z.array(z.string()),
 });
 
