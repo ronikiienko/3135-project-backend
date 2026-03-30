@@ -42,7 +42,7 @@ const Topbar: React.FC = () => {
   return (
     <Box px="lg" py="sm" style={{ borderBottom: '1px solid #e9ecef' }}>
       <Group justify="space-between">
-        <Text fw={600} style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>Dashboard</Text>
+        <Text fw={600} style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>PetShare</Text>
         <Group gap="md">
           {role === 'SHELTER' && user?.isVerified === false && (
             <Badge color="yellow" variant="light">Pending verification</Badge>

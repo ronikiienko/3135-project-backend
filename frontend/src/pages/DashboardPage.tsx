@@ -73,6 +73,43 @@ const ShelterDashboard: React.FC = () => {
   );
 };
 
+const RenterDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getListings().then(({ listings: all }) => {
+      if (all) setListings(all.filter((l) => !l.is_closed));
+      setLoading(false);
+    });
+  }, []);
+
+  return (
+    <Container my={40}>
+      <Title order={2} mb="lg">Available Pets</Title>
+      {loading ? <Loader /> : listings.length === 0 ? (
+        <Text c="dimmed">No listings available right now.</Text>
+      ) : (
+        <SimpleGrid cols={3}>
+          {listings.map((l) => (
+            <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
+              {l.listing_images[0] && (
+                <Card.Section mb="sm">
+                  <Image src={`${LISTING_IMAGES_URL}/${l.listing_images[0]}`} h={160} fit="contain" />
+                </Card.Section>
+              )}
+              <Text fw={600}>{l.name}</Text>
+              <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
+              <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
+            </Card>
+          ))}
+        </SimpleGrid>
+      )}
+    </Container>
+  );
+};
+
 const DashboardPage: React.FC = () => {
   const role = localStorage.getItem('role');
 
@@ -81,6 +118,7 @@ const DashboardPage: React.FC = () => {
       <Topbar />
       {role === 'ADMIN'   && <AdminDashboard />}
       {role === 'SHELTER' && <ShelterDashboard />}
+      {role === 'RENTER'  && <RenterDashboard />}
     </>
   );
 };
