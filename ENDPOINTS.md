@@ -455,6 +455,41 @@ const responseSchema = z.union([
 
 
 
+### GET /admin/shelters
+Authenticated.
+
+Roles allowed: admin
+
+Logic: returns all non-deleted shelters.
+Admin must be not deleted.
+
+Payload:
+```typescript
+const payloadSchema = z.object({});
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({
+        shelters: z.array(shelterSchema.omit({ password: true })),
+    }),
+    // status: 401
+    z.object({
+        error: z.literal("UNAUTHENTICATED")
+    }),
+    // status: 403
+    z.object({
+        error: z.literal("FORBIDDEN")
+    }),
+    // status: 500
+    z.object({
+        error: z.literal("INTERNAL_SERVER")
+    }),
+])
+```
+
 ### PATCH /admin/verifyShelter/:shelterId
 Authenticated.
 
