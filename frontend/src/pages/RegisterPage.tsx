@@ -13,6 +13,8 @@ import {
   Select,
   Textarea,
   Alert,
+  FileInput,
+  Pill,
 } from '@mantine/core';
 import { MdPersonAddAlt1 } from 'react-icons/md';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -166,21 +168,27 @@ const RegisterPage: React.FC = () => {
             onChange={(e) => setDescription(e.currentTarget.value)}
           />
 
-          <TextInput
+          <FileInput
             label="Avatar"
-            type="file"
             accept="image/*"
             mt="md"
-            onChange={(e) => setAvatar(e.currentTarget.files?.[0] ?? null)}
+            onChange={(file) => setAvatar(file)}
           />
 
-          <TextInput
+          <FileInput
             label="Profile Images"
-            type="file"
+            description="Hold Ctrl (or Cmd on Mac) to select multiple images at once"
             accept="image/*"
             multiple
             mt="md"
-            onChange={(e) => setProfileImages(e.currentTarget.files ? Array.from(e.currentTarget.files) : [])}
+            onChange={(files) => setProfileImages(files)}
+            valueComponent={({ value }) =>
+              Array.isArray(value) && value.length > 0 ? (
+                <Pill.Group>
+                  {value.map((f: File) => <Pill key={f.name}>{f.name}</Pill>)}
+                </Pill.Group>
+              ) : null
+            }
           />
 
           <Button fullWidth mt="xl" type="submit" loading={loading}>
