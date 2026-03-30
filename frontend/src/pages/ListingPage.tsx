@@ -1,20 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper } from '@mantine/core';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper, Anchor } from '@mantine/core';
+import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import Topbar from '../components/Topbar';
 import { getListing, Listing } from '../api/listing';
 import { LISTING_IMAGES_URL } from '../api/config';
 
 const ListingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [listing, setListing] = useState<Listing | null>(null);
+  const [shelter, setShelter] = useState<ShelterPublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     getListing(Number(id)).then((data) => {
       if (data.error) setError('Listing not found.');
-      else if (data.listing) setListing(data.listing);
+      else if (data.listing) {
+        setListing(data.listing);
+        getShelterProfile(data.listing.shelter_id).then(({ shelter }) => {
+          if (shelter) setShelter(shelter);
+        });
+      }
     });
   }, [id]);
 
@@ -52,6 +60,18 @@ const ListingPage: React.FC = () => {
               <Title order={2}>{listing.name}</Title>
               {listing.is_closed && <Badge color="red">Closed</Badge>}
             </Group>
+
+            {shelter && (
+              <Group gap="xs">
+                <Text size="sm">
+                  Posted by{' '}
+                  <Anchor onClick={() => navigate(`/shelter/profile/${shelter.id}`)} style={{ cursor: 'pointer' }}>
+                    {shelter.name}
+                  </Anchor>
+                </Text>
+                {shelter.is_verified && <Badge color="green" size="xs">Verified</Badge>}
+              </Group>
+            )}
 
             <Group gap="xl">
               <Text><b>Species:</b> {listing.species}</Text>

@@ -5,6 +5,7 @@ import Topbar from '../components/Topbar';
 import CreateListingModal from '../components/CreateListingModal';
 import { Listing, getListings } from '../api/listing';
 import { getShelterMe } from '../api/shelter';
+import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import { LISTING_IMAGES_URL } from '../api/config';
 
 const AdminDashboard: React.FC = () => {
@@ -76,11 +77,19 @@ const ShelterDashboard: React.FC = () => {
 const RenterDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
+  const [shelters, setShelters] = useState<Map<number, ShelterPublicProfile>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getListings().then(({ listings: all }) => {
-      if (all) setListings(all.filter((l) => !l.is_closed));
+    getListings().then(async ({ listings: all }) => {
+      if (!all) { setLoading(false); return; }
+      const open = all.filter((l) => !l.is_closed);
+      setListings(open);
+      const uniqueIds = [...new Set(open.map((l) => l.shelter_id))];
+      const results = await Promise.all(uniqueIds.map((id) => getShelterProfile(id)));
+      const map = new Map<number, ShelterPublicProfile>();
+      results.forEach(({ shelter }) => { if (shelter) map.set(shelter.id, shelter); });
+      setShelters(map);
       setLoading(false);
     });
   }, []);

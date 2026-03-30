@@ -1615,14 +1615,12 @@ NOT A PRIORITY FOR NOW
 
 ## Profiles
 
-### GET /profile?userId=
+### GET /shelter/profile?shelterId=
 Authenticated.
 
 Roles allowed: all
 
-Logic: returns profile of user with userId. 
-If user with userId doesn't exist return 404.
-Works for deleted and suspended users too
+Logic: returns public profile of shelter. Works for deleted and suspended shelters too.
 
 Payload:
 ```typescript
@@ -1630,15 +1628,11 @@ const payloadSchema = z.object({});
 ```
 
 Response:
-```typescript   
+```typescript
 const responseSchema = z.union([
     // status: 200
     z.object({
-        profile: z.union([
-            shelterSchema.omit({ password: true }),
-            renterSchema.omit({ password: true }),
-            adminSchema.omit({ password: true, can_create_admins: true }),
-        ]),
+        shelter: shelterSchema.omit({ password: true, email: true, is_deleted: true, suspended_until: true }),
     }),
     // status: 401
     z.object({
@@ -1646,7 +1640,49 @@ const responseSchema = z.union([
     }),
     // status: 404
     z.object({
-        error: z.literal("USER_NOT_FOUND")
+        error: z.literal("SHELTER_NOT_FOUND")
+    }),
+    // status: 400
+    z.object({
+        error: z.literal("PAYLOAD_MALFORMED")
+    }),
+    // status: 500
+    z.object({
+        error: z.literal("INTERNAL_SERVER")
+    }),
+]);
+```
+
+### GET /renter/profile?renterId=
+Authenticated.
+
+Roles allowed: all
+
+Logic: returns public profile of renter. Works for deleted and suspended renters too.
+
+Payload:
+```typescript
+const payloadSchema = z.object({});
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({
+        renter: renterSchema.omit({ password: true, email: true, is_deleted: true, suspended_until: true }),
+    }),
+    // status: 401
+    z.object({
+        error: z.literal("UNAUTHENTICATED")
+    }),
+    // status: 404
+    z.object({
+        error: z.literal("RENTER_NOT_FOUND")
+    }),
+    // status: 400
+    z.object({
+        error: z.literal("PAYLOAD_MALFORMED")
     }),
     // status: 500
     z.object({
