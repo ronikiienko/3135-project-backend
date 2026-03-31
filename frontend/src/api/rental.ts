@@ -84,6 +84,14 @@ export async function cancelRentalRequest(rentalId: number): Promise<{ error?: s
   return res.json();
 }
 
+export async function payForRental(rentalId: number): Promise<{ url?: string; error?: string }> {
+  const res = await fetch(`${BASE_URL}/renter/pay.php?rentalId=${rentalId}`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function respondToRentalTerms(
   rentalId: number,
   payload: { response: 'ACCEPT' | 'DECLINE' }

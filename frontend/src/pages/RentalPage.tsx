@@ -6,7 +6,7 @@ import {
 import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
-import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental } from '../api/rental';
+import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, payForRental, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental } from '../api/rental';
 import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const RentalPage: React.FC = () => {
@@ -84,12 +84,12 @@ const RentalPage: React.FC = () => {
     if (!rental) return;
     setActionLoading(true);
     setActionError(null);
-    const result = await respondToRentalTerms(rental.id, { response: 'ACCEPT' });
+    const result = await payForRental(rental.id);
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
+    if (result.error || !result.url) {
+      setActionError(result.error ?? 'Failed to initiate payment.');
     } else {
-      fetchRental();
+      window.location.href = result.url;
     }
   };
 
@@ -448,7 +448,7 @@ const RentalPage: React.FC = () => {
                 </Text>
                 <Group>
                   <Button color="green" onClick={handleRenterAccept} loading={actionLoading}>
-                    Accept Terms
+                    Pay Now
                   </Button>
                   <Button color="red" variant="outline" onClick={() => setShowDeclineTermsModal(true)} loading={actionLoading}>
                     Decline Terms
