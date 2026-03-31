@@ -457,22 +457,37 @@ const RentalPage: React.FC = () => {
           )}
 
           {/* Renter dispute for PAID status */}
-          {role === 'RENTER' && rental.status === 'PAID' && (
-            <Stack gap="xs">
-              <Text size="sm" c="dimmed">
-                If something went wrong during the rental, you can raise a <strong>dispute</strong> within 24 hours after the rental ends.
-                Once raised, the shelter's payout is put on hold while an admin reviews the case.
-              </Text>
-              <Text size="sm" c="orange.7">
-                Only raise a dispute if you have a genuine issue. An admin will review the reason you provide and decide the outcome.
-              </Text>
-              <Group>
-                <Button color="orange" variant="outline" onClick={() => setShowDisputeModal(true)} loading={actionLoading}>
-                  Raise Dispute
-                </Button>
-              </Group>
-            </Stack>
-          )}
+          {role === 'RENTER' && rental.status === 'PAID' && (() => {
+            const now = Date.now();
+            const endsTs = rental.rental_ends ? new Date(rental.rental_ends).getTime() : null;
+            const rentalEnded = endsTs !== null && endsTs <= now;
+            const windowExpired = endsTs !== null && (now - endsTs) > 24 * 60 * 60 * 1000;
+            const canDispute = rentalEnded && !windowExpired;
+
+            let disabledReason: string | null = null;
+            if (!rentalEnded) disabledReason = 'You can only raise a dispute after the rental has ended.';
+            else if (windowExpired) disabledReason = 'The 24-hour dispute window has passed.';
+
+            return (
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed">
+                  If something went wrong during the rental, you can raise a <strong>dispute</strong> within 24 hours after the rental ends.
+                  Once raised, the shelter's payout is put on hold while an admin reviews the case.
+                </Text>
+                {canDispute && (
+                  <Text size="sm" c="orange.7">
+                    Only raise a dispute if you have a genuine issue. An admin will review the reason you provide and decide the outcome.
+                  </Text>
+                )}
+                {disabledReason && <Text size="sm" c="dimmed">{disabledReason}</Text>}
+                <Group>
+                  <Button color="orange" variant="outline" onClick={() => setShowDisputeModal(true)} loading={actionLoading} disabled={!canDispute}>
+                    Raise Dispute
+                  </Button>
+                </Group>
+              </Stack>
+            );
+          })()}
         </Stack>
       </Container>
 

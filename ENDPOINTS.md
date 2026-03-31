@@ -858,6 +858,9 @@ Roles allowed: renter.
 Logic: create dispute for rental. Only the renter that belongs to the rental can open a dispute.
 Only not deleted renters can dispute rentals.
 Only rentals in "PAID" status can be disputed.
+rental_ends must be in the past (rental must have ended before a dispute can be raised).
+rental_ends must be no more than 24 hours in the past (dispute window has not expired).
+Both time violations return WRONG_RENTAL_STATUS.
 Switches rental status to "DISPUTE" and sets dispute reason.
 
 Payload:
