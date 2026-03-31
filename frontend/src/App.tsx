@@ -17,6 +17,8 @@ import RenterProfilePage from './pages/RenterProfilePage';
 import RentalPage from './pages/RentalPage';
 import RentalHistoryPage from './pages/RentalHistoryPage';
 import HelpPage from './pages/HelpPage';
+import MessagingPage from './pages/MessagingPage';
+import ConversationsPage from './pages/ConversationsPage';
 
 const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
@@ -52,6 +54,8 @@ const App: React.FC = () => {
           <Route path="/rental/:id" element={<RentalPage />} />
           <Route path="/rentals/history" element={<RentalHistoryPage />} />
           <Route path="/help" element={<HelpPage />} />
+          <Route path="/messages" element={<ConversationsPage />} />
+          <Route path="/messages/:userId" element={<MessagingPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

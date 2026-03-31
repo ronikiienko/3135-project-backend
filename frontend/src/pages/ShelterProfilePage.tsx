@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge, Rating, Divider, Anchor } from '@mantine/core';
+import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge, Rating, Divider, Anchor, Button } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
@@ -64,6 +64,7 @@ const ShelterProfilePage: React.FC = () => {
                     : <Badge color="gray">Not verified</Badge>
                   }
                 </Group>
+                <Button size="xs" variant="outline" onClick={() => navigate(`/messages/${shelter.id}`, { state: { correspondentName: shelter.name } })}>Message</Button>
                 {shelter.rating !== null && (
                   <Text size="sm" c="dimmed">Rating: {(shelter.rating * 5).toFixed(1)} / 5</Text>
                 )}

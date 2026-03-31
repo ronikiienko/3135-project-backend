@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge, Rating, Divider, Anchor } from '@mantine/core';
+import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge, Rating, Divider, Anchor, Button } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import { getRenterProfile, RenterPublicProfile } from '../api/profile';
@@ -60,6 +60,7 @@ const RenterProfilePage: React.FC = () => {
                   <Title order={2}>{renter.fName} {renter.lName}</Title>
                   <Badge color="teal">Renter</Badge>
                 </Group>
+                <Button size="xs" variant="outline" onClick={() => navigate(`/messages/${renter.id}`, { state: { correspondentName: `${renter.fName} ${renter.lName}` } })}>Message</Button>
                 {renter.rating !== null && (
                   <Text size="sm" c="dimmed">Rating: {(renter.rating * 5).toFixed(1)} / 5</Text>
                 )}
