@@ -63,6 +63,8 @@ const Topbar: React.FC = () => {
                 <Menu.Item onClick={() => navigate('/rentals/history')}>Rental History</Menu.Item>
               )}
               <Menu.Divider />
+              <Menu.Item onClick={() => navigate('/help')}>Help</Menu.Item>
+              <Menu.Divider />
               <Menu.Item color="red" onClick={handleLogout}>Log out</Menu.Item>
             </Menu.Dropdown>
           </Menu>

@@ -89,18 +89,28 @@ const ListingPage: React.FC = () => {
             </Stack>
 
             {role === 'RENTER' && !listing.is_closed && (
-              <Button
-                onClick={async () => {
-                  setRequesting(true);
-                  const data = await initiateRental(listing.id);
-                  setRequesting(false);
-                  if (!data.error) setRequested(true);
-                }}
-                loading={requesting}
-                disabled={requested}
-              >
-                {requested ? 'Request Sent' : 'Request Rental'}
-              </Button>
+              <Stack gap="xs">
+                <Button
+                  onClick={async () => {
+                    setRequesting(true);
+                    const data = await initiateRental(listing.id);
+                    setRequesting(false);
+                    if (!data.error) setRequested(true);
+                  }}
+                  loading={requesting}
+                  disabled={requested}
+                >
+                  {requested ? 'Request Sent' : 'Request Rental'}
+                </Button>
+                <Text size="xs" c="dimmed">
+                  Sending a request does not guarantee a rental. The shelter will review it and propose rental terms, which you can accept or decline.{' '}
+                  <Anchor size="xs" onClick={() => navigate('/help')}>Learn more</Anchor>
+                </Text>
+                <Text size="xs" c="dimmed">
+                  You don't set dates when requesting — the shelter proposes the rental period as part of their response.
+                  You can <Anchor size="xs" onClick={() => navigate(`/messages/${listing.shelter_id}`)}>message the shelter</Anchor> beforehand to discuss availability.
+                </Text>
+              </Stack>
             )}
 
             {role === 'SHELTER' && !listing.is_closed && (
