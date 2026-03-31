@@ -49,11 +49,11 @@ export const statusDescriptionRenter: Record<string, string> = {
 export const statusDescriptionShelter: Record<string, string> = {
   REQUESTED: 'A renter has requested to rent this pet. No payment involved yet.',
   SHELTER_DECLINED: 'You declined this rental request. No payment was involved.',
-  PAYMENT_PENDING: 'Terms proposed — waiting for the renter to pay. You can still withdraw.',
+  PAYMENT_PENDING: 'Terms proposed — waiting for the renter to pay. Do not hand over the pet yet. You can still withdraw.',
   PAYMENT_EXPIRED: 'The renter did not pay within the 24-hour window. The rental was cancelled and no payment was taken.',
   RENTER_DECLINED: 'The renter declined your proposed terms. No payment was taken.',
   SHELTER_WITHDREW: 'You withdrew your proposed terms before the renter paid. No payment was taken.',
-  PAID: 'The renter has paid. Payment will be released to you 24 hours after the rental ends, provided no dispute is raised.',
+  PAID: 'The renter has paid. You may now hand over the pet. Payment will be released to you 24 hours after the rental ends, provided no dispute is raised.',
   DISPUTE: 'The renter has raised a dispute. Your payout is on hold while an admin reviews the case.',
   PEACEFULLY_TERMINATED: 'The rental ended with no disputes. Payment has been released to you.',
   DISPUTE_IN_FAVOR_OF_SHELTER: 'The dispute was resolved in your favor. Payment has been released to you.',

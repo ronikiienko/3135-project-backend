@@ -123,10 +123,12 @@ const rentalStatusSchema = z.enum([
     "REQUESTED",
     // shelter declined request. 
     "SHELTER_DECLINED",
-    // shelter accepted and proposed terms (timeperiod in this case). Has up to 24 hours to pay
+    // shelter accepted and proposed terms (timeperiod in this case).
+    // renter can pay at any time before the rental start date.
     // time period must start in the future and end after it begins
-    "PAYMENT_PENDING", 
-    "PAYMENT_EXPIRED", // render didn't pay within allowed time period after shelter accepted rental
+    "PAYMENT_PENDING",
+    // renter did not pay before rental_begins passed. transitioned by cron job.
+    "PAYMENT_EXPIRED",
     "RENTER_DECLINED", // renter declined shelter's proposed terms
     "SHELTER_WITHDREW", // shelter withdrew from rental after accepting it but before renter paid
     "PAID", // rental paid (final acceptance of rental terms by renter)

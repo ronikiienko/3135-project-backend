@@ -22,7 +22,7 @@ const HelpPage: React.FC = () => {
                   <Stack gap="xs">
                     <Text size="sm">Browse available pets and click <strong>Request Rental</strong> on any listing. This sends a request to the shelter — it does not confirm anything yet.</Text>
                     <Text size="sm">You don't pick dates when requesting. The shelter proposes the rental period as part of their response. You can message the shelter beforehand to discuss availability.</Text>
-                    <Text size="sm">The shelter will either decline your request or propose a rental period with a total cost. You'll have <strong>24 hours</strong> to accept or decline. If you don't respond, the request expires automatically.</Text>
+                    <Text size="sm">The shelter will either decline your request or propose a rental period with a total cost. You can accept or decline at any time — but make sure to pay before the rental start date, otherwise the rental will expire.</Text>
                   </Stack>
                 </Accordion.Panel>
               </Accordion.Item>
@@ -71,8 +71,19 @@ const HelpPage: React.FC = () => {
                 <Accordion.Panel>
                   <Stack gap="xs">
                     <Text size="sm">When a renter requests a rental, you can <strong>decline</strong> to reject them, or <strong>accept</strong> to propose a rental period and cost.</Text>
-                    <Text size="sm">If you accept, the renter has <strong>24 hours</strong> to pay. If they don't, the request expires automatically.</Text>
+                    <Text size="sm">Once you propose terms, the renter can pay at any time before the rental start date.</Text>
                     <Text size="sm">Note: the renter can also <strong>cancel their request</strong> at any time before you respond, in which case it will disappear from your active rentals.</Text>
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              <Accordion.Item value="handover">
+                <Accordion.Control>When should I hand over the pet?</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    <Text size="sm" c="orange.7"><strong>Only hand over the pet once the rental status shows Paid.</strong></Text>
+                    <Text size="sm">Proposing terms or the rental start date arriving does not mean payment has been made. The renter must explicitly accept and pay — until then, the status remains "Awaiting payment".</Text>
+                    <Text size="sm">If the rental start time passes and the renter still hasn't paid, the rental will expire automatically. Do not hand over the pet in that case.</Text>
                   </Stack>
                 </Accordion.Panel>
               </Accordion.Item>

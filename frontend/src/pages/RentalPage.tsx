@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button, Modal,
+  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button, Modal, Textarea,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
-import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, withdrawFromRental, cancelRental, cancelRentalRequest } from '../api/rental';
+import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental } from '../api/rental';
 import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const RentalPage: React.FC = () => {
@@ -25,6 +25,8 @@ const RentalPage: React.FC = () => {
   const [showDenyModal, setShowDenyModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showDeclineTermsModal, setShowDeclineTermsModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
 
   // Shelter confirm form state
   const [showConfirmForm, setShowConfirmForm] = useState(false);
@@ -113,6 +115,20 @@ const RentalPage: React.FC = () => {
     if (result.error) {
       setActionError(result.error);
     } else {
+      fetchRental();
+    }
+  };
+
+  const handleDisputeRental = async () => {
+    if (!rental) return;
+    setActionLoading(true);
+    setActionError(null);
+    const result = await disputeRental(rental.id, disputeReason);
+    setActionLoading(false);
+    if (result.error) {
+      setActionError(result.error);
+    } else {
+      setDisputeReason('');
       fetchRental();
     }
   };
@@ -439,8 +455,56 @@ const RentalPage: React.FC = () => {
               </Stack>
             </Stack>
           )}
+
+          {/* Renter dispute for PAID status */}
+          {role === 'RENTER' && rental.status === 'PAID' && (
+            <Stack gap="xs">
+              <Text size="sm" c="dimmed">
+                If something went wrong during the rental, you can raise a <strong>dispute</strong> within 24 hours after the rental ends.
+                Once raised, the shelter's payout is put on hold while an admin reviews the case.
+              </Text>
+              <Text size="sm" c="orange.7">
+                Only raise a dispute if you have a genuine issue. An admin will review the reason you provide and decide the outcome.
+              </Text>
+              <Group>
+                <Button color="orange" variant="outline" onClick={() => setShowDisputeModal(true)} loading={actionLoading}>
+                  Raise Dispute
+                </Button>
+              </Group>
+            </Stack>
+          )}
         </Stack>
       </Container>
+
+      <Modal opened={showDisputeModal} onClose={() => { setShowDisputeModal(false); setDisputeReason(''); }} title="Raise a dispute" centered>
+        <Stack gap="md">
+          <Text size="sm">Describe what went wrong. An admin will review this and decide the outcome. Your payment is on hold until resolved.</Text>
+          <Textarea
+            label="Reason"
+            placeholder="Explain the issue in detail..."
+            value={disputeReason}
+            onChange={(e) => setDisputeReason(e.currentTarget.value)}
+            minRows={4}
+            required
+          />
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => { setShowDisputeModal(false); setDisputeReason(''); }} disabled={actionLoading}>
+              Go back
+            </Button>
+            <Button
+              color="orange"
+              loading={actionLoading}
+              disabled={!disputeReason.trim()}
+              onClick={async () => {
+                await handleDisputeRental();
+                setShowDisputeModal(false);
+              }}
+            >
+              Submit dispute
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <Modal opened={showDenyModal} onClose={() => setShowDenyModal(false)} title="Decline this request?" centered>
         <Stack gap="md">

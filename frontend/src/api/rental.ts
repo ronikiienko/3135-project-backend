@@ -66,6 +66,16 @@ export async function cancelRental(rentalId: number): Promise<{ error?: string }
   return res.json();
 }
 
+export async function disputeRental(rentalId: number, reason: string): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/renter/disputeRental.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ reason }),
+  });
+  return res.json();
+}
+
 export async function cancelRentalRequest(rentalId: number): Promise<{ error?: string }> {
   const res = await fetch(`${BASE_URL}/renter/cancelRentalRequest.php?rentalId=${rentalId}`, {
     method: 'PATCH',
