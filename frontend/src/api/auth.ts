@@ -74,6 +74,28 @@ export async function registerShelter(
   return res.json();
 }
 
+export interface RegisterAdminPayload {
+  email: string;
+  password: string;
+  name: string;
+  token: string;
+  can_create_admins: boolean;
+}
+
+export async function registerAdmin(
+  payload: RegisterAdminPayload,
+  avatar?: File | null,
+  profileImages?: File[],
+) {
+  const res = await postMultipart(
+    `${BASE_URL}/auth/registerAdmin.php`,
+    payload,
+    { avatar: avatar ?? null },
+    { profile_images: profileImages ?? [] },
+  );
+  return res.json();
+}
+
 export async function registerRenter(
   payload: RegisterRenterPayload,
   avatar?: File | null,

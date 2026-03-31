@@ -18,9 +18,9 @@ import {
 } from '@mantine/core';
 import { MdPersonAddAlt1 } from 'react-icons/md';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { registerShelter, registerRenter } from '../api/auth';
+import { registerShelter, registerRenter, registerAdmin } from '../api/auth';
 
-type RegisterRole = 'SHELTER' | 'RENTER';
+type RegisterRole = 'SHELTER' | 'RENTER' | 'ADMIN';
 
 const RegisterPage: React.FC = () => {
   const [role, setRole] = useState<RegisterRole>('RENTER');
@@ -38,6 +38,10 @@ const RegisterPage: React.FC = () => {
   const [fName, setFName] = useState('');
   const [lName, setLName] = useState('');
 
+  // Admin only
+  const [adminName, setAdminName] = useState('');
+  const [adminToken, setAdminToken] = useState('');
+
   // Files
   const [avatar, setAvatar] = useState<File | null>(null);
   const [profileImages, setProfileImages] = useState<File[]>([]);
@@ -54,6 +58,8 @@ const RegisterPage: React.FC = () => {
       let data;
       if (role === 'SHELTER') {
         data = await registerShelter({ email, password, name: shelterName, location, description }, avatar, profileImages);
+      } else if (role === 'ADMIN') {
+        data = await registerAdmin({ email, password, name: adminName, token: adminToken, can_create_admins: false }, avatar, profileImages);
       } else {
         data = await registerRenter({ email, password, fName, lName, location, description }, avatar, profileImages);
       }
@@ -61,6 +67,7 @@ const RegisterPage: React.FC = () => {
       if (data.error) {
         if (data.error === 'EMAIL_ALREADY_IN_USE') setError('This email is already registered.');
         else if (data.error === 'PAYLOAD_MALFORMED') setError('Invalid input.');
+        else if (data.error === 'UNAUTHENTICATED' || data.error === 'FORBIDDEN') setError('You are not authorized to register.');
         else setError('Something went wrong. Please try again.');
       } else {
         localStorage.setItem('role', role);
@@ -100,6 +107,7 @@ const RegisterPage: React.FC = () => {
             data={[
               { value: 'RENTER', label: 'Renter' },
               { value: 'SHELTER', label: 'Shelter' },
+              { value: 'ADMIN', label: 'Admin' },
             ]}
           />
 
@@ -112,6 +120,27 @@ const RegisterPage: React.FC = () => {
               value={shelterName}
               onChange={(e) => setShelterName(e.currentTarget.value)}
             />
+          )}
+
+          {role === 'ADMIN' && (
+            <>
+              <TextInput
+                label="Full Name"
+                placeholder="Your name"
+                required
+                mt="md"
+                value={adminName}
+                onChange={(e) => setAdminName(e.currentTarget.value)}
+              />
+              <TextInput
+                label="Invite Token"
+                placeholder="Paste the token you received"
+                required
+                mt="md"
+                value={adminToken}
+                onChange={(e) => setAdminToken(e.currentTarget.value)}
+              />
+            </>
           )}
 
           {role === 'RENTER' && (
@@ -151,22 +180,26 @@ const RegisterPage: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.currentTarget.value)}
           />
-          <TextInput
-            label="Location"
-            placeholder="City, State"
-            required
-            mt="md"
-            value={location}
-            onChange={(e) => setLocation(e.currentTarget.value)}
-          />
-          <Textarea
-            label="Description"
-            placeholder="Tell us about yourself"
-            required
-            mt="md"
-            value={description}
-            onChange={(e) => setDescription(e.currentTarget.value)}
-          />
+          {role !== 'ADMIN' && (
+            <>
+              <TextInput
+                label="Location"
+                placeholder="City, State"
+                required
+                mt="md"
+                value={location}
+                onChange={(e) => setLocation(e.currentTarget.value)}
+              />
+              <Textarea
+                label="Description"
+                placeholder="Tell us about yourself"
+                required
+                mt="md"
+                value={description}
+                onChange={(e) => setDescription(e.currentTarget.value)}
+              />
+            </>
+          )}
 
           <FileInput
             label="Avatar"

@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Title, Text, Stack, Avatar, Group, Loader, Alert, Paper, Badge } from '@mantine/core';
-import { getAdminMe, Admin } from '../api/admin';
+import { Container, Title, Text, Stack, Avatar, Group, Loader, Alert, Paper, Badge, Button, Code, Divider } from '@mantine/core';
+import { getAdminMe, createAdminToken, Admin } from '../api/admin';
 import { AVATARS_URL } from '../api/config';
 import Topbar from '../components/Topbar';
 
 const AdminAccountPage: React.FC = () => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tokenLoading, setTokenLoading] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [tokenExpiresAt, setTokenExpiresAt] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
 
   useEffect(() => {
     getAdminMe().then((data) => {
@@ -54,6 +58,40 @@ const AdminAccountPage: React.FC = () => {
                 <Text c="dimmed">{admin.email}</Text>
               </Stack>
             </Group>
+
+            {admin.can_create_admins && (
+              <>
+                <Divider />
+                <Stack gap="sm">
+                  <Title order={4}>Invite Admin</Title>
+                  <Text size="sm" c="dimmed">Generate a one-time token to share with the new admin. It expires in 48 hours and is consumed on use.</Text>
+                  {tokenError && <Alert color="red">{tokenError}</Alert>}
+                  {generatedToken && (
+                    <Stack gap={4}>
+                      <Text size="sm" fw={500}>Share this token:</Text>
+                      <Code block>{generatedToken}</Code>
+                      <Text size="xs" c="dimmed">Expires: {tokenExpiresAt ? new Date(tokenExpiresAt).toLocaleString() : ''}</Text>
+                    </Stack>
+                  )}
+                  <Button
+                    variant="outline"
+                    color="grape"
+                    loading={tokenLoading}
+                    onClick={async () => {
+                      setTokenLoading(true);
+                      setTokenError(null);
+                      setGeneratedToken(null);
+                      const data = await createAdminToken();
+                      setTokenLoading(false);
+                      if (data.error) setTokenError('Failed to generate token.');
+                      else { setGeneratedToken(data.adminToken!); setTokenExpiresAt(data.expiresAt!); }
+                    }}
+                  >
+                    Generate invite token
+                  </Button>
+                </Stack>
+              </>
+            )}
           </Stack>
         </Paper>
       </Container>

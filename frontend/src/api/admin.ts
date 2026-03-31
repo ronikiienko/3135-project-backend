@@ -51,6 +51,14 @@ export async function assignDispute(rentalId: number): Promise<{ error?: string 
   return res.json();
 }
 
+export async function createAdminToken(): Promise<{ adminToken?: string; expiresAt?: string; error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/createAdminToken.php`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function resolveDispute(rentalId: number, resolution: 'IN_FAVOR_OF_SHELTER' | 'IN_FAVOR_OF_RENTER'): Promise<{ error?: string }> {
   const res = await fetch(`${BASE_URL}/admin/resolveDispute.php?rentalId=${rentalId}`, {
     method: 'PATCH',
