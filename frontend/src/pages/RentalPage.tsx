@@ -266,12 +266,12 @@ const RentalPage: React.FC = () => {
               {!showConfirmForm ? (
                 <Stack gap="xs">
                   <Text size="sm" c="dimmed">
-                    <strong>Accept</strong> to propose a rental period and cost — the renter will have 24 hours to pay.{' '}
+                    <strong>Accept</strong> to propose a rental period and cost — the renter must pay before the rental start date.{' '}
                     <strong>Decline</strong> to reject this request.
                   </Text>
                   <Text size="sm" c="dimmed">
                     Once the renter pays, you can still cancel the rental — but this will fully refund them.
-                    If the renter hasn't paid within 24 hours, the request expires automatically.
+                    If the renter hasn't paid before the rental start date, the request expires automatically.
                     You can also withdraw your proposed terms at any time before the renter pays.
                   </Text>
                   <Text size="sm" c="dimmed">
@@ -438,7 +438,7 @@ const RentalPage: React.FC = () => {
                   <strong>Decline</strong> to reject these terms — no payment will be taken.
                 </Text>
                 <Text size="sm" c="dimmed">
-                  Your payment is held securely until the rental period ends. The shelter receives the funds 24 hours after the rental ends, once no dispute has been raised.
+                  Your payment is held securely until the rental period ends. The shelter receives the funds once the rental ends and no dispute has been raised within 24 hours.
                 </Text>
                 <Text size="sm" c="dimmed">
                   If something goes wrong during the rental, you have 24 hours after it ends to raise a dispute. An admin will review it and decide the outcome.

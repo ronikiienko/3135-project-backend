@@ -31,8 +31,8 @@ const HelpPage: React.FC = () => {
                 <Accordion.Control>How does payment work?</Accordion.Control>
                 <Accordion.Panel>
                   <Stack gap="xs">
-                    <Text size="sm">When you accept the shelter's terms, payment is taken immediately and held securely. The shelter does <strong>not</strong> receive the money right away.</Text>
-                    <Text size="sm">The funds are released to the shelter <strong>24 hours after the rental ends</strong>, provided no dispute has been raised.</Text>
+                    <Text size="sm">When you accept the shelter's terms, you must pay before the rental start date. Payment is held securely — the shelter does <strong>not</strong> receive the money right away.</Text>
+                    <Text size="sm">The funds are released to the shelter <strong>after the rental ends</strong>, provided no dispute has been raised within 24 hours.</Text>
                     <Text size="sm" c="orange.7"><strong>Once you pay, the payment is non-refundable</strong> except if the shelter cancels or you win a dispute.</Text>
                   </Stack>
                 </Accordion.Panel>
@@ -105,7 +105,7 @@ const HelpPage: React.FC = () => {
               <Accordion.Item value="payout">
                 <Accordion.Control>When do I receive payment?</Accordion.Control>
                 <Accordion.Panel>
-                  <Text size="sm">Payment is released to you <strong>24 hours after the rental period ends</strong>, as long as the renter has not raised a dispute. If a dispute is opened, an admin reviews it and decides the outcome.</Text>
+                  <Text size="sm">Payment is released to you <strong>after the rental period ends</strong>, as long as the renter has not raised a dispute within 24 hours. If a dispute is opened, an admin reviews it and decides the outcome.</Text>
                 </Accordion.Panel>
               </Accordion.Item>
             </Accordion>
