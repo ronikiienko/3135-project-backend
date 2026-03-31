@@ -87,7 +87,7 @@ if ($response === 'CONFIRM') {
     ]);
 
 } elseif ($response === 'DENY') {
-    $stmt = $db->prepare('UPDATE rentals SET status = "SHELTER_DECLINED" WHERE id = :id');
+    $stmt = $db->prepare('UPDATE rentals SET status = "SHELTER_DECLINED", closed_at = NOW() WHERE id = :id');
     $stmt->execute([':id' => $rentalId]);
 
 } else {

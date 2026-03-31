@@ -16,6 +16,7 @@ export interface Rental {
   dispute_reason: string | null;
   total_cost: number | null;
   stripe_transaction_id: string | null;
+  closed_at: string | null;
 }
 
 export async function getRentals(): Promise<{ rentals?: Rental[]; error?: string }> {

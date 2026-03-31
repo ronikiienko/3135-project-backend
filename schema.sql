@@ -69,7 +69,8 @@ CREATE TABLE listings
     age         tinyint       NOT NULL,
     description text          NOT NULL,
     is_closed   boolean       DEFAULT false,
-    rate        decimal(10, 2) NOT NULL
+    rate        decimal(10, 2) NOT NULL,
+    created_at  timestamp     DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE listing_images
@@ -111,7 +112,8 @@ CREATE TABLE rentals
     )                     NOT NULL,
     dispute_reason        text,
     total_cost            decimal(10, 2),
-    stripe_transaction_id varchar(255)
+    stripe_transaction_id varchar(255),
+    closed_at             datetime
 );
 
 CREATE TABLE reports

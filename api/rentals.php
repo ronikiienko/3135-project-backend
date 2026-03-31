@@ -41,6 +41,7 @@ foreach ($stmt->fetchAll() as $row) {
         'dispute_reason'        => $row['dispute_reason'],
         'total_cost'            => $row['total_cost'] !== null ? (float) $row['total_cost'] : null,
         'stripe_transaction_id' => $row['stripe_transaction_id'],
+        'closed_at'             => $row['closed_at'],
     ];
 }
 

@@ -15,7 +15,7 @@ if (!$listingId) {
     error_response('PAYLOAD_MALFORMED', 400);
 }
 
-$stmt = $db->prepare('SELECT id, shelter_id, name, species, age, description, is_closed, rate FROM listings WHERE id = :id');
+$stmt = $db->prepare('SELECT id, shelter_id, name, species, age, description, is_closed, rate, created_at FROM listings WHERE id = :id');
 $stmt->execute([':id' => $listingId]);
 $row = $stmt->fetch();
 
@@ -37,6 +37,7 @@ json_response([
         'description'    => $row['description'],
         'is_closed'      => (bool) $row['is_closed'],
         'rate'           => (float) $row['rate'],
+        'created_at'     => $row['created_at'],
         'listing_images' => $images,
     ],
 ]);

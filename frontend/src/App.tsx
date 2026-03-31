@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
@@ -12,9 +12,19 @@ import AdminAccountPage from './pages/AdminAccountPage';
 import AdminSheltersPage from './pages/AdminSheltersPage';
 import ListingPage from './pages/ListingPage';
 import ShelterProfilePage from './pages/ShelterProfilePage';
-import RenterRentalsPage from './pages/RenterRentalsPage';
 import RenterProfilePage from './pages/RenterProfilePage';
 import RentalPage from './pages/RentalPage';
+
+const NotFoundPage: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <h2>We can't find that page</h2>
+      <p style={{ color: 'gray' }}>The page you're looking for doesn't exist.</p>
+      <button onClick={() => navigate(-1)}>Go back</button>
+    </div>
+  );
+};
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -34,11 +44,10 @@ const App: React.FC = () => {
           <Route path="/admin/shelters" element={<AdminSheltersPage />} />
           <Route path="/listing/:id" element={<ListingPage />} />
           <Route path="/shelter/profile/:id" element={<ShelterProfilePage />} />
-          <Route path="/renter/rentals" element={<RenterRentalsPage />} />
           <Route path="/renter/profile/:id" element={<RenterProfilePage />} />
           <Route path="/rental/:id" element={<RentalPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </MantineProvider>

@@ -110,6 +110,7 @@ const ShelterDashboard: React.FC = () => {
                     <Text fw={600}>{l.name}</Text>
                     <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
                     <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
+                    <Text size="xs" c="dimmed" mt={4}>Posted {new Date(l.created_at).toLocaleDateString()}</Text>
                   </Card>
                 ))}
               </SimpleGrid>
@@ -126,43 +127,89 @@ const ShelterDashboard: React.FC = () => {
 const RenterDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
+  const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const activeStatuses = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'];
+
   useEffect(() => {
-    getListings().then(({ listings: all }) => {
-      setListings((all ?? []).filter((l) => !l.is_closed));
+    Promise.all([
+      getListings(),
+      getRentals(),
+    ]).then(([listingsData, rentalsData]) => {
+      setListings((listingsData.listings ?? []).filter((l) => !l.is_closed));
+      setRentals(rentalsData.rentals ?? []);
       setLoading(false);
     });
   }, []);
 
+  const activeRentals = rentals.filter((r) => activeStatuses.includes(r.status));
+
   return (
     <Container my={40}>
-      <Title order={2} mb="lg">Available Pets</Title>
-      {loading ? <Loader /> : listings.length === 0 ? (
-        <Text c="dimmed">No listings available right now.</Text>
-      ) : (
-        <SimpleGrid cols={3}>
-          {listings.map((l) => (
-            <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
-              {l.listing_images[0] && (
-                <Card.Section mb="sm">
-                  <Image src={`${LISTING_IMAGES_URL}/${l.listing_images[0]}`} h={160} fit="contain" />
-                </Card.Section>
-              )}
-              <Text fw={600}>{l.name}</Text>
-              <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
-              <Text
-                size="sm"
-                c="blue"
-                style={{ cursor: 'pointer' }}
-                onClick={(e) => { e.stopPropagation(); navigate(`/shelter/profile/${l.shelter_id}`); }}
-              >
-                {l.shelter_name}
-              </Text>
-              <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
-            </Card>
-          ))}
-        </SimpleGrid>
+      {loading ? <Loader /> : (
+        <Stack gap="xl">
+          {activeRentals.length > 0 && (
+            <Stack gap="sm">
+              <Group gap="sm">
+                <Title order={2}>Active Rentals</Title>
+                <Badge color="yellow">{activeRentals.length}</Badge>
+              </Group>
+              <Stack gap="xs">
+                {activeRentals.map((r) => (
+                  <Card key={r.id} withBorder padding="sm" radius="md" style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/${r.id}`)}>
+                    <Group justify="space-between">
+                      <Stack gap={2}>
+                        <Text fw={600}>{r.listing_name}</Text>
+                        <Text
+                          size="sm"
+                          c="blue"
+                          style={{ cursor: 'pointer' }}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/shelter/profile/${r.shelter_id}`); }}
+                        >
+                          Shelter: {r.shelter_name}
+                        </Text>
+                      </Stack>
+                      <Badge color={statusColor[r.status] ?? 'gray'}>{statusLabel[r.status] ?? r.status}</Badge>
+                    </Group>
+                  </Card>
+                ))}
+              </Stack>
+              <Divider />
+            </Stack>
+          )}
+
+          <Stack gap="sm">
+            <Title order={2}>Available Pets</Title>
+            {listings.length === 0 ? (
+              <Text c="dimmed">No listings available right now.</Text>
+            ) : (
+              <SimpleGrid cols={3}>
+                {listings.map((l) => (
+                  <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
+                    {l.listing_images[0] && (
+                      <Card.Section mb="sm">
+                        <Image src={`${LISTING_IMAGES_URL}/${l.listing_images[0]}`} h={160} fit="contain" />
+                      </Card.Section>
+                    )}
+                    <Text fw={600}>{l.name}</Text>
+                    <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
+                    <Text
+                      size="sm"
+                      c="blue"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/shelter/profile/${l.shelter_id}`); }}
+                    >
+                      {l.shelter_name}
+                    </Text>
+                    <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
+                    <Text size="xs" c="dimmed" mt={4}>Posted {new Date(l.created_at).toLocaleDateString()}</Text>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            )}
+          </Stack>
+        </Stack>
       )}
     </Container>
   );

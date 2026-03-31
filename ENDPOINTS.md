@@ -113,6 +113,7 @@ const listingSchema = z.object({
     description: z.string(),
     is_closed: z.boolean(),
     rate: moneySchema, // hourly rate in USD
+    created_at: timestampSchema,
     shelter_name: z.string(),
     listing_images: z.array(z.string()),
 });
@@ -157,6 +158,7 @@ const rentalSchema = z.object({
     dispute_reason: z.string().nullable(),
     total_cost: moneySchema.nullable(),
     stripe_transaction_id: z.string().nullable(),
+    closed_at: timestampSchema.nullable(), // set when rental reaches a terminal status
 });
 
 const messageSchema = z.object({

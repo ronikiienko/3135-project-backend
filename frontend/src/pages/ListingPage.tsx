@@ -73,6 +73,7 @@ const ListingPage: React.FC = () => {
                   </Anchor>
                 </Text>
                 {shelter.is_verified && <Badge color="green" size="xs">Verified</Badge>}
+                <Text size="sm" c="dimmed">· {new Date(listing.created_at).toLocaleDateString()}</Text>
               </Group>
             )}
 

@@ -55,7 +55,7 @@ if ($response === 'ACCEPT') {
     $stmt->execute([':id' => $rentalId]);
 
 } elseif ($response === 'DECLINE') {
-    $stmt = $db->prepare('UPDATE rentals SET status = "RENTER_DECLINED" WHERE id = :id');
+    $stmt = $db->prepare('UPDATE rentals SET status = "RENTER_DECLINED", closed_at = NOW() WHERE id = :id');
     $stmt->execute([':id' => $rentalId]);
 
 } else {

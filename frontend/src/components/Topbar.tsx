@@ -59,9 +59,6 @@ const Topbar: React.FC = () => {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item onClick={() => navigate(accountPath)}>Account</Menu.Item>
-              {role === 'RENTER' && (
-                <Menu.Item onClick={() => navigate('/renter/rentals')}>My Rentals</Menu.Item>
-              )}
               <Menu.Divider />
               <Menu.Item color="red" onClick={handleLogout}>Log out</Menu.Item>
             </Menu.Dropdown>
