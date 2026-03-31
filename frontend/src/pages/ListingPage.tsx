@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper, Anchor, Button } from '@mantine/core';
+import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper, Anchor, Button, Modal } from '@mantine/core';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import Topbar from '../components/Topbar';
 import { getListing, Listing, closeListing } from '../api/listing';
@@ -17,6 +17,7 @@ const ListingPage: React.FC = () => {
   const [requested, setRequested] = useState(false);
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState<string | null>(null);
+  const [showCloseModal, setShowCloseModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -122,19 +123,7 @@ const ListingPage: React.FC = () => {
                   Closing a listing is <strong>irreversible</strong>. It will no longer appear to renters, but active rentals will not be affected.
                 </Text>
                 <Group>
-                  <Button
-                    color="red"
-                    variant="outline"
-                    loading={closing}
-                    onClick={async () => {
-                      setClosing(true);
-                      setCloseError(null);
-                      const result = await closeListing(listing.id);
-                      setClosing(false);
-                      if (result.error) setCloseError(result.error);
-                      else setListing({ ...listing, is_closed: true });
-                    }}
-                  >
+                  <Button color="red" variant="outline" loading={closing} onClick={() => setShowCloseModal(true)}>
                     Close Listing
                   </Button>
                 </Group>
@@ -142,6 +131,33 @@ const ListingPage: React.FC = () => {
             )}
           </Stack>
         </Paper>
+
+        <Modal opened={showCloseModal} onClose={() => setShowCloseModal(false)} title="Close this listing?" centered>
+          <Stack gap="md">
+            <Text>This listing will be permanently closed and hidden from renters. This cannot be undone. Active rentals will not be affected.</Text>
+            <Group justify="flex-end">
+              <Button variant="outline" onClick={() => setShowCloseModal(false)} disabled={closing}>Go back</Button>
+              <Button
+                color="red"
+                loading={closing}
+                onClick={async () => {
+                  setClosing(true);
+                  setCloseError(null);
+                  const result = await closeListing(listing.id);
+                  setClosing(false);
+                  if (result.error) {
+                    setCloseError(result.error);
+                  } else {
+                    setListing({ ...listing, is_closed: true });
+                  }
+                  setShowCloseModal(false);
+                }}
+              >
+                Yes, close listing
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
       </Container>
     </>
   );

@@ -41,7 +41,12 @@ const HelpPage: React.FC = () => {
               <Accordion.Item value="decline">
                 <Accordion.Control>Can I back out before paying?</Accordion.Control>
                 <Accordion.Panel>
-                  <Text size="sm">Yes. When the shelter proposes terms, you can <strong>decline</strong> — no payment will be taken and the rental ends there. Once you have paid, you cannot get a refund except through a dispute or a shelter cancellation.</Text>
+                  <Stack gap="xs">
+                    <Text size="sm">Yes — at any point before you pay, you can back out with no charge:</Text>
+                    <Text size="sm">· While your request is waiting for the shelter to respond, you can <strong>cancel your request</strong> at any time.</Text>
+                    <Text size="sm">· Once the shelter proposes terms, you can <strong>decline</strong> them — no payment will be taken.</Text>
+                    <Text size="sm">Once you have paid, you cannot get a refund except through a dispute or a shelter cancellation.</Text>
+                  </Stack>
                 </Accordion.Panel>
               </Accordion.Item>
 
@@ -67,6 +72,7 @@ const HelpPage: React.FC = () => {
                   <Stack gap="xs">
                     <Text size="sm">When a renter requests a rental, you can <strong>decline</strong> to reject them, or <strong>accept</strong> to propose a rental period and cost.</Text>
                     <Text size="sm">If you accept, the renter has <strong>24 hours</strong> to pay. If they don't, the request expires automatically.</Text>
+                    <Text size="sm">Note: the renter can also <strong>cancel their request</strong> at any time before you respond, in which case it will disappear from your active rentals.</Text>
                   </Stack>
                 </Accordion.Panel>
               </Accordion.Item>

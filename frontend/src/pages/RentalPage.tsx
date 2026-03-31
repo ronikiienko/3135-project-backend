@@ -6,7 +6,7 @@ import {
 import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
-import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, withdrawFromRental, cancelRental } from '../api/rental';
+import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, withdrawFromRental, cancelRental, cancelRentalRequest } from '../api/rental';
 import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const RentalPage: React.FC = () => {
@@ -21,6 +21,10 @@ const RentalPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showCancelRequestModal, setShowCancelRequestModal] = useState(false);
+  const [showDenyModal, setShowDenyModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showDeclineTermsModal, setShowDeclineTermsModal] = useState(false);
 
   // Shelter confirm form state
   const [showConfirmForm, setShowConfirmForm] = useState(false);
@@ -105,6 +109,19 @@ const RentalPage: React.FC = () => {
     setActionLoading(true);
     setActionError(null);
     const result = await withdrawFromRental(rental.id);
+    setActionLoading(false);
+    if (result.error) {
+      setActionError(result.error);
+    } else {
+      fetchRental();
+    }
+  };
+
+  const handleRenterCancelRequest = async () => {
+    if (!rental) return;
+    setActionLoading(true);
+    setActionError(null);
+    const result = await cancelRentalRequest(rental.id);
     setActionLoading(false);
     if (result.error) {
       setActionError(result.error);
@@ -247,7 +264,7 @@ const RentalPage: React.FC = () => {
                     <Button color="green" onClick={() => setShowConfirmForm(true)} loading={actionLoading}>
                       Accept
                     </Button>
-                    <Button color="red" variant="outline" onClick={handleShelterDeny} loading={actionLoading}>
+                    <Button color="red" variant="outline" onClick={() => setShowDenyModal(true)} loading={actionLoading}>
                       Decline
                     </Button>
                   </Group>
@@ -291,7 +308,7 @@ const RentalPage: React.FC = () => {
                 Changed your mind? <strong>Withdraw</strong> to cancel the proposed terms. The renter will be notified and no payment will be taken.
               </Text>
               <Group>
-                <Button color="red" variant="outline" onClick={handleShelterWithdraw} loading={actionLoading}>
+                <Button color="red" variant="outline" onClick={() => setShowWithdrawModal(true)} loading={actionLoading}>
                   Withdraw
                 </Button>
               </Group>
@@ -340,6 +357,46 @@ const RentalPage: React.FC = () => {
             </Stack>
           </Modal>
 
+          {/* Renter cancel for REQUESTED status */}
+          {role === 'RENTER' && rental.status === 'REQUESTED' && (
+            <Stack gap="xs">
+              <Text size="sm" c="dimmed">
+                Your request is waiting for the shelter to respond. You can cancel it at any time before they accept or decline — no payment will be taken.
+              </Text>
+              <Group>
+                <Button color="red" variant="outline" onClick={() => setShowCancelRequestModal(true)} loading={actionLoading}>
+                  Cancel Request
+                </Button>
+              </Group>
+            </Stack>
+          )}
+
+          <Modal
+            opened={showCancelRequestModal}
+            onClose={() => setShowCancelRequestModal(false)}
+            title="Cancel this request?"
+            centered
+          >
+            <Stack gap="md">
+              <Text>Your request will be withdrawn. No payment will be taken. This cannot be undone.</Text>
+              <Group justify="flex-end">
+                <Button variant="outline" onClick={() => setShowCancelRequestModal(false)} disabled={actionLoading}>
+                  Go back
+                </Button>
+                <Button
+                  color="red"
+                  loading={actionLoading}
+                  onClick={async () => {
+                    await handleRenterCancelRequest();
+                    setShowCancelRequestModal(false);
+                  }}
+                >
+                  Yes, cancel request
+                </Button>
+              </Group>
+            </Stack>
+          </Modal>
+
           {/* Renter actions for PAYMENT_PENDING status */}
           {role === 'RENTER' && rental.status === 'PAYMENT_PENDING' && (
             <Stack gap="sm">
@@ -375,7 +432,7 @@ const RentalPage: React.FC = () => {
                   <Button color="green" onClick={handleRenterAccept} loading={actionLoading}>
                     Accept Terms
                   </Button>
-                  <Button color="red" variant="outline" onClick={handleRenterDecline} loading={actionLoading}>
+                  <Button color="red" variant="outline" onClick={() => setShowDeclineTermsModal(true)} loading={actionLoading}>
                     Decline Terms
                   </Button>
                 </Group>
@@ -384,6 +441,42 @@ const RentalPage: React.FC = () => {
           )}
         </Stack>
       </Container>
+
+      <Modal opened={showDenyModal} onClose={() => setShowDenyModal(false)} title="Decline this request?" centered>
+        <Stack gap="md">
+          <Text>The renter's request will be declined. This cannot be undone.</Text>
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setShowDenyModal(false)} disabled={actionLoading}>Go back</Button>
+            <Button color="red" loading={actionLoading} onClick={async () => { await handleShelterDeny(); setShowDenyModal(false); }}>
+              Yes, decline
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal opened={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} title="Withdraw proposed terms?" centered>
+        <Stack gap="md">
+          <Text>Your proposed terms will be withdrawn. The renter will not be charged. This cannot be undone.</Text>
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setShowWithdrawModal(false)} disabled={actionLoading}>Go back</Button>
+            <Button color="red" loading={actionLoading} onClick={async () => { await handleShelterWithdraw(); setShowWithdrawModal(false); }}>
+              Yes, withdraw
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal opened={showDeclineTermsModal} onClose={() => setShowDeclineTermsModal(false)} title="Decline these terms?" centered>
+        <Stack gap="md">
+          <Text>You will decline the shelter's proposed terms. No payment will be taken. This cannot be undone.</Text>
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setShowDeclineTermsModal(false)} disabled={actionLoading}>Go back</Button>
+            <Button color="red" loading={actionLoading} onClick={async () => { await handleRenterDecline(); setShowDeclineTermsModal(false); }}>
+              Yes, decline terms
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </>
   );
 };

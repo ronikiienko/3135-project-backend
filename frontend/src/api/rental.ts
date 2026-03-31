@@ -66,6 +66,14 @@ export async function cancelRental(rentalId: number): Promise<{ error?: string }
   return res.json();
 }
 
+export async function cancelRentalRequest(rentalId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/renter/cancelRentalRequest.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function respondToRentalTerms(
   rentalId: number,
   payload: { response: 'ACCEPT' | 'DECLINE' }
