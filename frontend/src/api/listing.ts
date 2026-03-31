@@ -33,6 +33,14 @@ export async function getListings(): Promise<{ listings?: Listing[]; error?: str
   return res.json();
 }
 
+export async function closeListing(listingId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/shelter/closeListing.php?listingId=${listingId}`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function createListing(
   payload: CreateListingPayload,
   listingImages?: File[],

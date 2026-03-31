@@ -56,6 +56,8 @@ const ShelterDashboard: React.FC = () => {
 
   const activeStatuses = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'];
   const activeRentals = rentals.filter((r) => activeStatuses.includes(r.status));
+  const openListings = listings.filter((l) => !l.is_closed);
+  const closedListings = listings.filter((l) => l.is_closed);
 
   return (
     <Container my={40}>
@@ -96,11 +98,11 @@ const ShelterDashboard: React.FC = () => {
               <Title order={2}>Your Listings</Title>
               <Button onClick={() => setModalOpen(true)}>Create Listing</Button>
             </Group>
-            {listings.length === 0 ? (
-              <Text c="dimmed">No listings yet. Create your first one!</Text>
+            {openListings.length === 0 ? (
+              <Text c="dimmed">No active listings. Create your first one!</Text>
             ) : (
               <SimpleGrid cols={3}>
-                {listings.map((l) => (
+                {openListings.map((l) => (
                   <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
                     {l.listing_images[0] && (
                       <Card.Section mb="sm">
@@ -116,6 +118,34 @@ const ShelterDashboard: React.FC = () => {
               </SimpleGrid>
             )}
           </Stack>
+
+          {closedListings.length > 0 && (
+            <Stack gap="sm">
+              <Divider />
+              <Group gap="sm">
+                <Title order={3} c="dimmed">Closed Listings</Title>
+                <Badge color="gray">{closedListings.length}</Badge>
+              </Group>
+              <SimpleGrid cols={3}>
+                {closedListings.map((l) => (
+                  <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer', opacity: 0.6 }} onClick={() => navigate(`/listing/${l.id}`)}>
+                    {l.listing_images[0] && (
+                      <Card.Section mb="sm">
+                        <Image src={`${LISTING_IMAGES_URL}/${l.listing_images[0]}`} h={160} fit="contain" />
+                      </Card.Section>
+                    )}
+                    <Group gap="xs">
+                      <Text fw={600}>{l.name}</Text>
+                      <Badge color="red" size="xs">Closed</Badge>
+                    </Group>
+                    <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
+                    <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
+                    <Text size="xs" c="dimmed" mt={4}>Posted {new Date(l.created_at).toLocaleDateString()}</Text>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            </Stack>
+          )}
         </Stack>
       )}
 

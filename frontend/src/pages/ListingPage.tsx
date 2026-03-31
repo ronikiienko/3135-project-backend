@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Title, Text, Stack, Group, Badge, Image, SimpleGrid, Loader, Alert, Paper, Anchor, Button } from '@mantine/core';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import Topbar from '../components/Topbar';
-import { getListing, Listing } from '../api/listing';
+import { getListing, Listing, closeListing } from '../api/listing';
 import { initiateRental } from '../api/rental';
 import { LISTING_IMAGES_URL } from '../api/config';
 
@@ -15,6 +15,8 @@ const ListingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -114,9 +116,29 @@ const ListingPage: React.FC = () => {
             )}
 
             {role === 'SHELTER' && !listing.is_closed && (
-              <Group>
-                {/* Close Listing button goes here */}
-              </Group>
+              <Stack gap="xs">
+                {closeError && <Alert color="red">{closeError}</Alert>}
+                <Text size="sm" c="dimmed">
+                  Closing a listing is <strong>irreversible</strong>. It will no longer appear to renters, but active rentals will not be affected.
+                </Text>
+                <Group>
+                  <Button
+                    color="red"
+                    variant="outline"
+                    loading={closing}
+                    onClick={async () => {
+                      setClosing(true);
+                      setCloseError(null);
+                      const result = await closeListing(listing.id);
+                      setClosing(false);
+                      if (result.error) setCloseError(result.error);
+                      else setListing({ ...listing, is_closed: true });
+                    }}
+                  >
+                    Close Listing
+                  </Button>
+                </Group>
+              </Stack>
             )}
           </Stack>
         </Paper>
