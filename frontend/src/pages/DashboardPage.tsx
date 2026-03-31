@@ -5,9 +5,9 @@ import Topbar from '../components/Topbar';
 import CreateListingModal from '../components/CreateListingModal';
 import { Listing, getListings } from '../api/listing';
 import { getShelterMe } from '../api/shelter';
-import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import { Rental, getRentals } from '../api/rental';
 import { LISTING_IMAGES_URL } from '../api/config';
+import { statusColor, statusLabel } from '../utils/rentalStatus';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -24,20 +24,6 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-const statusColor: Record<string, string> = {
-  REQUESTED: 'yellow',
-  SHELTER_DECLINED: 'red',
-  PAYMENT_PENDING: 'blue',
-  PAYMENT_EXPIRED: 'red',
-  RENTER_DECLINED: 'red',
-  SHELTER_WITHDREW: 'red',
-  PAID: 'green',
-  DISPUTE: 'orange',
-  PEACEFULLY_TERMINATED: 'gray',
-  DISPUTE_IN_FAVOR_OF_SHELTER: 'green',
-  DISPUTE_IN_FAVOR_OF_RENTER: 'red',
-  SHELTER_CANCELLED: 'red',
-};
 
 const ShelterDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -87,9 +73,16 @@ const ShelterDashboard: React.FC = () => {
                     <Group justify="space-between">
                       <Stack gap={2}>
                         <Text fw={600}>{listingMap.get(r.listing_id)?.name ?? `Listing #${r.listing_id}`}</Text>
-                        <Text size="sm" c="dimmed">Renter #{r.renter_id}</Text>
+                        <Text
+                          size="sm"
+                          c="blue"
+                          style={{ cursor: 'pointer' }}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/renter/profile/${r.renter_id}`); }}
+                        >
+                          Renter: {r.renter_name}
+                        </Text>
                       </Stack>
-                      <Badge color={statusColor[r.status] ?? 'gray'}>{r.status}</Badge>
+                      <Badge color={statusColor[r.status] ?? 'gray'}>{statusLabel[r.status] ?? r.status}</Badge>
                     </Group>
                   </Card>
                 ))}
@@ -133,19 +126,11 @@ const ShelterDashboard: React.FC = () => {
 const RenterDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
-  const [shelters, setShelters] = useState<Map<number, ShelterPublicProfile>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getListings().then(async ({ listings: all }) => {
-      if (!all) { setLoading(false); return; }
-      const open = all.filter((l) => !l.is_closed);
-      setListings(open);
-      const uniqueIds = [...new Set(open.map((l) => l.shelter_id))];
-      const results = await Promise.all(uniqueIds.map((id) => getShelterProfile(id)));
-      const map = new Map<number, ShelterPublicProfile>();
-      results.forEach(({ shelter }) => { if (shelter) map.set(shelter.id, shelter); });
-      setShelters(map);
+    getListings().then(({ listings: all }) => {
+      setListings((all ?? []).filter((l) => !l.is_closed));
       setLoading(false);
     });
   }, []);
@@ -166,6 +151,14 @@ const RenterDashboard: React.FC = () => {
               )}
               <Text fw={600}>{l.name}</Text>
               <Text size="sm" c="dimmed">{l.species} · {l.age} yrs · ${l.rate}/hr</Text>
+              <Text
+                size="sm"
+                c="blue"
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => { e.stopPropagation(); navigate(`/shelter/profile/${l.shelter_id}`); }}
+              >
+                {l.shelter_name}
+              </Text>
               <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
             </Card>
           ))}

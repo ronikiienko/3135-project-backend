@@ -113,6 +113,7 @@ const listingSchema = z.object({
     description: z.string(),
     is_closed: z.boolean(),
     rate: moneySchema, // hourly rate in USD
+    shelter_name: z.string(),
     listing_images: z.array(z.string()),
 });
 
@@ -122,7 +123,7 @@ const rentalStatusSchema = z.enum([
     // shelter declined request. 
     "SHELTER_DECLINED",
     // shelter accepted and proposed terms (timeperiod in this case). Has up to 24 hours to pay
-    // time period CAN start any moment after moment when shelter accepts rental (we don't enforce this)
+    // time period must start in the future and end after it begins
     "PAYMENT_PENDING", 
     "PAYMENT_EXPIRED", // render didn't pay within allowed time period after shelter accepted rental
     "RENTER_DECLINED", // renter declined shelter's proposed terms
@@ -145,7 +146,9 @@ const rentalSchema = z.object({
     shelter_id: idSchema,
     renter_id: idSchema,
     listing_id: idSchema,
-    listing_name: z.string().nullable(),
+    listing_name: z.string(),
+    renter_name: z.string(),
+    shelter_name: z.string(),
     assigned_admin_id: idSchema.nullable(),
     rental_begins: timestampSchema.nullable(),
     rental_ends: timestampSchema.nullable(),
@@ -596,6 +599,7 @@ Only not deleted shelters can respond to rental requests.
 We do NOT enforce that there are no overlaps in time periods with other rentals for same listing.
 Only works if rental is in "REQUESTED" status.
 Switches status to "PAYMENT_PENDING" or "SHELTER_DECLINED" depending on shelter's response.
+When CONFIRM: suggestedRentalBegins must be in the future, and suggestedRentalEnds must be after suggestedRentalBegins. Otherwise PAYLOAD_MALFORMED.
 
 Payload:
 ```typescript

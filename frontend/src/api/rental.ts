@@ -5,7 +5,9 @@ export interface Rental {
   shelter_id: number;
   renter_id: number;
   listing_id: number;
-  listing_name: string | null;
+  listing_name: string;
+  renter_name: string;
+  shelter_name: string;
   assigned_admin_id: number | null;
   rental_begins: string | null;
   rental_ends: string | null;

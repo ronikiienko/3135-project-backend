@@ -9,6 +9,7 @@ export interface Listing {
   description: string;
   is_closed: boolean;
   rate: number;
+  shelter_name: string;
   listing_images: string[];
 }
 

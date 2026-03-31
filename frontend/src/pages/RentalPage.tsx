@@ -7,21 +7,7 @@ import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
 import { Rental, getRental, respondToRentalRequest, respondToRentalTerms } from '../api/rental';
-
-const statusColor: Record<string, string> = {
-  REQUESTED: 'yellow',
-  SHELTER_DECLINED: 'red',
-  PAYMENT_PENDING: 'blue',
-  PAYMENT_EXPIRED: 'red',
-  RENTER_DECLINED: 'red',
-  SHELTER_WITHDREW: 'red',
-  PAID: 'green',
-  DISPUTE: 'orange',
-  PEACEFULLY_TERMINATED: 'gray',
-  DISPUTE_IN_FAVOR_OF_SHELTER: 'green',
-  DISPUTE_IN_FAVOR_OF_RENTER: 'red',
-  SHELTER_CANCELLED: 'red',
-};
+import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const RentalPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -131,9 +117,16 @@ const RentalPage: React.FC = () => {
       <Topbar />
       <Container my={40} size="sm">
         <Stack gap="lg">
-          <Group justify="space-between" align="center">
+          <Group justify="space-between" align="flex-start">
             <Title order={2}>Rental #{rental.id}</Title>
-            <Badge size="lg" color={statusColor[rental.status] ?? 'gray'}>{rental.status.replace(/_/g, ' ')}</Badge>
+            <Stack gap={4} align="flex-end">
+              <Badge size="lg" color={statusColor[rental.status] ?? 'gray'}>
+                {statusLabel[rental.status] ?? rental.status.replace(/_/g, ' ')}
+              </Badge>
+              <Text size="xs" c="dimmed" ta="right" maw={260}>
+                {(role === 'SHELTER' ? statusDescriptionShelter : statusDescriptionRenter)[rental.status]}
+              </Text>
+            </Stack>
           </Group>
 
           <Paper withBorder p="md" radius="md">
@@ -144,9 +137,33 @@ const RentalPage: React.FC = () => {
                   style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--mantine-color-blue-6)' }}
                   onClick={() => navigate(`/listing/${rental.listing_id}`)}
                 >
-                  {rental.listing_name ?? `Listing #${rental.listing_id}`}
+                  {rental.listing_name}
                 </Text>
               </Group>
+
+              {role === 'SHELTER' && (
+                <Group>
+                  <Text fw={600} w={160}>Renter:</Text>
+                  <Text
+                    style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--mantine-color-blue-6)' }}
+                    onClick={() => navigate(`/renter/profile/${rental.renter_id}`)}
+                  >
+                    {rental.renter_name}
+                  </Text>
+                </Group>
+              )}
+
+              {role === 'RENTER' && (
+                <Group>
+                  <Text fw={600} w={160}>Shelter:</Text>
+                  <Text
+                    style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--mantine-color-blue-6)' }}
+                    onClick={() => navigate(`/shelter/profile/${rental.shelter_id}`)}
+                  >
+                    {rental.shelter_name}
+                  </Text>
+                </Group>
+              )}
 
               {rental.rental_begins && (
                 <Group>

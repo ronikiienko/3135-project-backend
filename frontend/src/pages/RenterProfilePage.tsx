@@ -2,19 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge } from '@mantine/core';
 import Topbar from '../components/Topbar';
-import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
+import { getRenterProfile, RenterPublicProfile } from '../api/profile';
 import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
 
-const ShelterProfilePage: React.FC = () => {
+const RenterProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [shelter, setShelter] = useState<ShelterPublicProfile | null>(null);
+  const [renter, setRenter] = useState<RenterPublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
-    getShelterProfile(Number(id)).then((data) => {
-      if (data.error) setError('Shelter not found.');
-      else if (data.shelter) setShelter(data.shelter);
+    getRenterProfile(Number(id)).then((data) => {
+      if (data.error) setError('Renter not found.');
+      else if (data.renter) setRenter(data.renter);
     });
   }, [id]);
 
@@ -25,7 +25,7 @@ const ShelterProfilePage: React.FC = () => {
     </>
   );
 
-  if (!shelter) return (
+  if (!renter) return (
     <>
       <Topbar />
       <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}><Loader /></Container>
@@ -40,43 +40,39 @@ const ShelterProfilePage: React.FC = () => {
           <Stack>
             <Group>
               <Avatar
-                src={shelter.avatar_filename ? `${AVATARS_URL}/${shelter.avatar_filename}` : undefined}
+                src={renter.avatar_filename ? `${AVATARS_URL}/${renter.avatar_filename}` : undefined}
                 size="xl"
                 radius="xl"
                 color="blue"
               >
-                {shelter.name.charAt(0)}
+                {renter.fName.charAt(0)}
               </Avatar>
               <Stack gap={4}>
                 <Group gap="xs">
-                  <Title order={2}>{shelter.name}</Title>
-                  <Badge color="blue">Shelter</Badge>
-                  {shelter.is_verified
-                    ? <Badge color="green">Verified</Badge>
-                    : <Badge color="gray">Not verified</Badge>
-                  }
+                  <Title order={2}>{renter.fName} {renter.lName}</Title>
+                  <Badge color="teal">Renter</Badge>
                 </Group>
-                {shelter.rating !== null && (
-                  <Text size="sm" c="dimmed">Rating: {(shelter.rating * 5).toFixed(1)} / 5</Text>
+                {renter.rating !== null && (
+                  <Text size="sm" c="dimmed">Rating: {(renter.rating * 5).toFixed(1)} / 5</Text>
                 )}
               </Stack>
             </Group>
 
             <Stack gap={4}>
               <Text fw={500}>Location</Text>
-              <Text>{shelter.location}</Text>
+              <Text>{renter.location}</Text>
             </Stack>
 
             <Stack gap={4}>
               <Text fw={500}>About</Text>
-              <Text>{shelter.description}</Text>
+              <Text>{renter.description}</Text>
             </Stack>
 
-            {shelter.profile_images.length > 0 && (
+            {renter.profile_images.length > 0 && (
               <Stack gap={4}>
                 <Text fw={500}>Photos</Text>
                 <SimpleGrid cols={3}>
-                  {shelter.profile_images.map((filename) => (
+                  {renter.profile_images.map((filename) => (
                     <Image key={filename} src={`${PROFILE_IMAGES_URL}/${filename}`} radius="md" fit="cover" h={120} />
                   ))}
                 </SimpleGrid>
@@ -89,4 +85,4 @@ const ShelterProfilePage: React.FC = () => {
   );
 };
 
-export default ShelterProfilePage;
+export default RenterProfilePage;

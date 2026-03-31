@@ -11,8 +11,10 @@ require_auth();
 $db = get_db();
 
 $stmt = $db->query('
-    SELECT l.id, l.shelter_id, l.name, l.species, l.age, l.description, l.is_closed, l.rate
+    SELECT l.id, l.shelter_id, l.name, l.species, l.age, l.description, l.is_closed, l.rate,
+           s.name AS shelter_name
     FROM listings l
+    JOIN shelters s ON s.id = l.shelter_id
 ');
 
 $listings = [];
@@ -30,6 +32,7 @@ foreach ($stmt->fetchAll() as $row) {
         'description'    => $row['description'],
         'is_closed'      => (bool) $row['is_closed'],
         'rate'           => (float) $row['rate'],
+        'shelter_name'   => $row['shelter_name'],
         'listing_images' => $images,
     ];
 }

@@ -13,6 +13,7 @@ import AdminSheltersPage from './pages/AdminSheltersPage';
 import ListingPage from './pages/ListingPage';
 import ShelterProfilePage from './pages/ShelterProfilePage';
 import RenterRentalsPage from './pages/RenterRentalsPage';
+import RenterProfilePage from './pages/RenterProfilePage';
 import RentalPage from './pages/RentalPage';
 
 const theme = createTheme({
@@ -34,6 +35,7 @@ const App: React.FC = () => {
           <Route path="/listing/:id" element={<ListingPage />} />
           <Route path="/shelter/profile/:id" element={<ShelterProfilePage />} />
           <Route path="/renter/rentals" element={<RenterRentalsPage />} />
+          <Route path="/renter/profile/:id" element={<RenterProfilePage />} />
           <Route path="/rental/:id" element={<RentalPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />

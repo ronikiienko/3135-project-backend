@@ -55,7 +55,7 @@ if ($response === 'CONFIRM') {
     $beginsTs = strtotime($begins);
     $endsTs   = strtotime($ends);
 
-    if ($beginsTs === false || $endsTs === false || $endsTs <= $beginsTs) {
+    if ($beginsTs === false || $endsTs === false || $beginsTs <= time() || $endsTs <= $beginsTs) {
         error_response('PAYLOAD_MALFORMED', 400);
     }
 
