@@ -60,6 +60,16 @@ const HelpPage: React.FC = () => {
                   </Stack>
                 </Accordion.Panel>
               </Accordion.Item>
+
+              <Accordion.Item value="reviews">
+                <Accordion.Control>Can I leave a review?</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    <Text size="sm">Yes — after a rental is completed or ended (including if the shelter cancelled), you can leave a review for the shelter on the rental page.</Text>
+                    <Text size="sm">You can only leave one review per rental. Reviews are visible on the shelter's profile page.</Text>
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
             </Accordion>
           </Stack>
 
@@ -106,6 +116,52 @@ const HelpPage: React.FC = () => {
                 <Accordion.Control>When do I receive payment?</Accordion.Control>
                 <Accordion.Panel>
                   <Text size="sm">Payment is released to you <strong>after the rental period ends</strong>, as long as the renter has not raised a dispute within 24 hours. If a dispute is opened, an admin reviews it and decides the outcome.</Text>
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              <Accordion.Item value="shelter-reviews">
+                <Accordion.Control>Can I leave a review for the renter?</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    <Text size="sm">Yes — after a rental is completed, you can leave a review for the renter on the rental page. If payment expired (the renter never paid), you can also leave a review.</Text>
+                    <Text size="sm">You can only leave one review per rental. Reviews are visible on the renter's profile page.</Text>
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </Stack>
+
+          <Stack gap="sm">
+            <Title order={4}>For Admins</Title>
+            <Accordion variant="separated">
+              <Accordion.Item value="admin-register">
+                <Accordion.Control>How do I create an admin account?</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    <Text size="sm">Admin accounts require an invite token from an existing admin with the "Can create admins" permission.</Text>
+                    <Text size="sm">The existing admin generates a token from their Account page and shares it with you. You then register at the Register page, select Admin, and paste the token.</Text>
+                    <Text size="sm">Tokens are one-time use and expire after 48 hours.</Text>
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              <Accordion.Item value="admin-disputes">
+                <Accordion.Control>How do I handle disputes?</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    <Text size="sm">Open disputes appear in the <strong>Disputes</strong> page. Claim one to assign it to yourself — only you can then resolve it.</Text>
+                    <Text size="sm">Your assigned disputes appear on your dashboard. You can view the rental for context, then resolve in favour of the shelter or the renter from the dashboard.</Text>
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              <Accordion.Item value="admin-shelters">
+                <Accordion.Control>How do I verify shelters?</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    <Text size="sm">Unverified shelters appear in the <strong>Shelters</strong> page. Claim one to assign it to yourself.</Text>
+                    <Text size="sm">Your assigned shelters appear on your dashboard. Review the shelter's profile, then verify them from the dashboard.</Text>
+                  </Stack>
                 </Accordion.Panel>
               </Accordion.Item>
             </Accordion>
