@@ -14,6 +14,7 @@ import ListingPage from './pages/ListingPage';
 import ShelterProfilePage from './pages/ShelterProfilePage';
 import RenterProfilePage from './pages/RenterProfilePage';
 import RentalPage from './pages/RentalPage';
+import RentalHistoryPage from './pages/RentalHistoryPage';
 
 const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ const App: React.FC = () => {
           <Route path="/shelter/profile/:id" element={<ShelterProfilePage />} />
           <Route path="/renter/profile/:id" element={<RenterProfilePage />} />
           <Route path="/rental/:id" element={<RentalPage />} />
+          <Route path="/rentals/history" element={<RentalHistoryPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
