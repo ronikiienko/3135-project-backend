@@ -184,9 +184,11 @@ const RentalPage: React.FC = () => {
               <Badge size="lg" color={statusColor[rental.status] ?? 'gray'}>
                 {statusLabel[rental.status] ?? rental.status.replace(/_/g, ' ')}
               </Badge>
-              <Text size="xs" c="dimmed" ta="right" maw={260}>
-                {(role === 'SHELTER' ? statusDescriptionShelter : statusDescriptionRenter)[rental.status]}
-              </Text>
+              {role !== 'ADMIN' && (
+                <Text size="xs" c="dimmed" ta="right" maw={260}>
+                  {(role === 'SHELTER' ? statusDescriptionShelter : statusDescriptionRenter)[rental.status]}
+                </Text>
+              )}
             </Stack>
           </Group>
 
@@ -202,7 +204,7 @@ const RentalPage: React.FC = () => {
                 </Text>
               </Group>
 
-              {role === 'SHELTER' && (
+              {(role === 'SHELTER' || role === 'ADMIN') && (
                 <Group>
                   <Text fw={600} w={160}>Renter:</Text>
                   <Text
@@ -214,7 +216,7 @@ const RentalPage: React.FC = () => {
                 </Group>
               )}
 
-              {role === 'RENTER' && (
+              {(role === 'RENTER' || role === 'ADMIN') && (
                 <Group>
                   <Text fw={600} w={160}>Shelter:</Text>
                   <Text

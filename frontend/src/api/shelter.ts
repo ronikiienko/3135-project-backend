@@ -12,6 +12,7 @@ export interface Shelter {
   description: string;
   rating: number | null;
   suspended_until: string | null;
+  assigned_admin_id: number | null;
 }
 
 export async function getShelterMe(): Promise<{ shelter?: Shelter; error?: string }> {

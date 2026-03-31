@@ -10,6 +10,7 @@ import ShelterAccountPage from './pages/ShelterAccountPage';
 import RenterAccountPage from './pages/RenterAccountPage';
 import AdminAccountPage from './pages/AdminAccountPage';
 import AdminSheltersPage from './pages/AdminSheltersPage';
+import AdminDisputesPage from './pages/AdminDisputesPage';
 import ListingPage from './pages/ListingPage';
 import ShelterProfilePage from './pages/ShelterProfilePage';
 import RenterProfilePage from './pages/RenterProfilePage';
@@ -44,6 +45,7 @@ const App: React.FC = () => {
           <Route path="/renter/account" element={<RenterAccountPage />} />
           <Route path="/admin/account" element={<AdminAccountPage />} />
           <Route path="/admin/shelters" element={<AdminSheltersPage />} />
+          <Route path="/admin/disputes" element={<AdminDisputesPage />} />
           <Route path="/listing/:id" element={<ListingPage />} />
           <Route path="/shelter/profile/:id" element={<ShelterProfilePage />} />
           <Route path="/renter/profile/:id" element={<RenterProfilePage />} />

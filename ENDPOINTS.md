@@ -93,6 +93,7 @@ const shelterSchema = userSchema.extend({
     description: z.string(),
     rating: ratingSchema.nullable(),
     suspended_until: timestampSchema.nullable(),
+    assigned_admin_id: idSchema.nullable(), // admin assigned to verify this shelter; null if unassigned
 });
 
 const renterSchema = userSchema.extend({
@@ -501,13 +502,64 @@ const responseSchema = z.union([
 ])
 ```
 
+### PATCH /admin/assignShelterVerification?shelterId=
+Authenticated.
+
+Roles allowed: admin.
+
+Logic: assigns the requesting admin to a shelter verification. Only unverified shelters with no assigned admin can be claimed.
+Admin must be not deleted.
+Returns ALREADY_ASSIGNED (409) if shelter already has an assigned admin.
+
+Payload:
+```typescript
+const payloadSchema = z.object({});
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({}),
+    // status: 401
+    z.object({
+        error: z.literal("UNAUTHENTICATED")
+    }),
+    // status: 403
+    z.object({
+        error: z.literal("FORBIDDEN")
+    }),
+    // status: 404
+    z.object({
+        error: z.literal("SHELTER_NOT_FOUND")
+    }),
+    // status: 409
+    z.object({
+        error: z.literal("SHELTER_ALREADY_VERIFIED")
+    }),
+    // status: 409
+    z.object({
+        error: z.literal("ALREADY_ASSIGNED")
+    }),
+    // status: 500
+    z.object({
+        error: z.literal("INTERNAL_SERVER")
+    }),
+    // status: 400
+    z.object({
+        error: z.literal("PAYLOAD_MALFORMED")
+    }),
+])
+```
+
 ### PATCH /admin/verifyShelter?shelterId=
 Authenticated.
 
 Roles allowed: admin
 
 Logic: verifies shelter. Only unverified shelters can be verified.
-Admin must be not deleted
+Only the admin assigned to the shelter via assignShelterVerification can verify it.
+Admin must be not deleted.
 
 Payload:
 ```typescript
@@ -1034,9 +1086,9 @@ const responseSchema = z.union([
 ### GET /rental
 Authenticated.
 
-Roles allowed: shelter or renter
+Roles allowed: shelter, renter, admin.
 
-Logic: returns a single rental by ID. The requesting user must own the rental (shelter_id or renter_id must match session user).
+Logic: returns a single rental by ID. Shelter and renter must own the rental (shelter_id or renter_id must match session user). Admins can view any rental.
 
 Payload:
 ```typescript

@@ -82,6 +82,7 @@ const ShelterProfilePage: React.FC = () => {
                 </SimpleGrid>
               </Stack>
             )}
+
           </Stack>
         </Paper>
       </Container>

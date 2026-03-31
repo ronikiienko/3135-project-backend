@@ -34,14 +34,14 @@ foreach ($stmt->fetchAll() as $row) {
         'renter_name'           => $row['renter_name'],
         'shelter_name'          => $row['shelter_name'],
         'assigned_admin_id'     => $row['assigned_admin_id'] ? (int) $row['assigned_admin_id'] : null,
-        'rental_begins'         => $row['rental_begins'],
-        'rental_ends'           => $row['rental_ends'],
-        'terms_proposed_at'     => $row['terms_proposed_at'],
+        'rental_begins'         => format_datetime($row['rental_begins']),
+        'rental_ends'           => format_datetime($row['rental_ends']),
+        'terms_proposed_at'     => format_datetime($row['terms_proposed_at']),
         'status'                => $row['status'],
         'dispute_reason'        => $row['dispute_reason'],
         'total_cost'            => $row['total_cost'] !== null ? (float) $row['total_cost'] : null,
         'stripe_transaction_id' => $row['stripe_transaction_id'],
-        'closed_at'             => $row['closed_at'],
+        'closed_at'             => format_datetime($row['closed_at']),
     ];
 }
 

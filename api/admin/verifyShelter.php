@@ -20,7 +20,7 @@ if (!$shelterId) {
     error_response('PAYLOAD_MALFORMED', 400);
 }
 
-$stmt = $db->prepare('SELECT s.is_verified, u.is_deleted FROM shelters s JOIN users u ON u.id = s.id WHERE s.id = :id');
+$stmt = $db->prepare('SELECT s.is_verified, s.assigned_admin_id, u.is_deleted FROM shelters s JOIN users u ON u.id = s.id WHERE s.id = :id');
 $stmt->execute([':id' => $shelterId]);
 $shelter = $stmt->fetch();
 
@@ -29,6 +29,9 @@ if (!$shelter) {
 }
 if ($shelter['is_verified']) {
     error_response('SHELTER_ALREADY_VERIFIED', 409);
+}
+if ((int) $shelter['assigned_admin_id'] !== $session['user_id']) {
+    error_response('FORBIDDEN', 403);
 }
 
 $stmt = $db->prepare('UPDATE shelters SET is_verified = true WHERE id = :id');

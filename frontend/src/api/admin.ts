@@ -1,5 +1,6 @@
 import { BASE_URL } from './config';
 import { Shelter } from './shelter';
+import { Rental } from './rental';
 
 export interface Admin {
   id: number;
@@ -21,10 +22,41 @@ export async function getAdminShelters(): Promise<{ shelters?: Shelter[]; error?
   return res.json();
 }
 
+export async function getAdminDisputes(): Promise<{ disputes?: Rental[]; error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/disputes.php`, { credentials: 'include' });
+  return res.json();
+}
+
+export async function assignShelterVerification(shelterId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/assignShelterVerification.php?shelterId=${shelterId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function verifyShelter(shelterId: number): Promise<{ error?: string }> {
   const res = await fetch(`${BASE_URL}/admin/verifyShelter.php?shelterId=${shelterId}`, {
     method: 'PATCH',
     credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function assignDispute(rentalId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/assignDispute.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function resolveDispute(rentalId: number, resolution: 'IN_FAVOR_OF_SHELTER' | 'IN_FAVOR_OF_RENTER'): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/resolveDispute.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ resolution }),
   });
   return res.json();
 }

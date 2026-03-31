@@ -22,7 +22,14 @@ function get_db(): PDO
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ]);
+        $pdo->exec("SET time_zone = '+00:00'");
     }
 
     return $pdo;
+}
+
+function format_datetime(?string $dt): ?string
+{
+    if ($dt === null) return null;
+    return (new DateTime($dt, new DateTimeZone('UTC')))->format('c');
 }

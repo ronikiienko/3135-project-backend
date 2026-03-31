@@ -32,7 +32,7 @@ foreach ($stmt->fetchAll() as $row) {
         'description'    => $row['description'],
         'is_closed'      => (bool) $row['is_closed'],
         'rate'           => (float) $row['rate'],
-        'created_at'     => $row['created_at'],
+        'created_at'     => format_datetime($row['created_at']),
         'shelter_name'   => $row['shelter_name'],
         'listing_images' => $images,
     ];

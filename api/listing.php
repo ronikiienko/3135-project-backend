@@ -37,7 +37,7 @@ json_response([
         'description'    => $row['description'],
         'is_closed'      => (bool) $row['is_closed'],
         'rate'           => (float) $row['rate'],
-        'created_at'     => $row['created_at'],
+        'created_at'     => format_datetime($row['created_at']),
         'listing_images' => $images,
     ],
 ]);

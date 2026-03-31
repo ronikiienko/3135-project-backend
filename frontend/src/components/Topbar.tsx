@@ -62,6 +62,12 @@ const Topbar: React.FC = () => {
               {(role === 'SHELTER' || role === 'RENTER') && (
                 <Menu.Item onClick={() => navigate('/rentals/history')}>Rental History</Menu.Item>
               )}
+              {role === 'ADMIN' && (
+                <>
+                  <Menu.Item onClick={() => navigate('/admin/shelters')}>Shelters</Menu.Item>
+                  <Menu.Item onClick={() => navigate('/admin/disputes')}>Disputes</Menu.Item>
+                </>
+              )}
               <Menu.Divider />
               <Menu.Item onClick={() => navigate('/help')}>Help</Menu.Item>
               <Menu.Divider />

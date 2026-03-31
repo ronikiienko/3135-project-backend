@@ -1,107 +1,90 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Title, Table, Badge, Button, Loader, Alert, Group } from '@mantine/core';
+import { Container, Title, Table, Badge, Button, Loader, Alert, Group, Text } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
-import { getAdminShelters, verifyShelter } from '../api/admin';
+import { getAdminShelters, assignShelterVerification, getAdminMe } from '../api/admin';
 import { Shelter } from '../api/shelter';
 
 const AdminSheltersPage: React.FC = () => {
+  const navigate = useNavigate();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState<number | null>(null);
+  const [claiming, setClaiming] = useState<number | null>(null);
+
+  const [adminId, setAdminId] = useState<number | null>(null);
 
   useEffect(() => {
-    getAdminShelters().then((data) => {
-      if (data.error) setError('Failed to load shelters.');
-      else if (data.shelters) setShelters(data.shelters);
+    Promise.all([getAdminMe(), getAdminShelters()]).then(([meData, sheltersData]) => {
+      if (meData.admin) setAdminId(meData.admin.id);
+      if (sheltersData.error) setError('Failed to load shelters.');
+      else if (sheltersData.shelters) setShelters(sheltersData.shelters);
       setLoading(false);
     });
   }, []);
 
-  const handleVerify = async (id: number) => {
-    setVerifying(id);
-    const data = await verifyShelter(id);
+  const handleClaim = async (id: number) => {
+    setClaiming(id);
+    const data = await assignShelterVerification(id);
     if (!data.error) {
-      setShelters((prev) => prev.map((s) => s.id === id ? { ...s, is_verified: true } : s));
+      setShelters((prev) => prev.map((s) => s.id === id ? { ...s, assigned_admin_id: adminId } : s));
     }
-    setVerifying(null);
+    setClaiming(null);
   };
 
-  const pending = shelters.filter((s) => !s.is_verified);
-  const verified = shelters.filter((s) => s.is_verified);
+  const unverified = shelters.filter((s) => !s.is_verified && s.assigned_admin_id === null);
 
-  if (loading) {
-    return (
-      <>
-        <Topbar />
-        <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}>
-          <Loader />
-        </Container>
-      </>
-    );
-  }
+  if (loading) return (
+    <>
+      <Topbar />
+      <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}><Loader /></Container>
+    </>
+  );
 
-  if (error) {
-    return (
-      <>
-        <Topbar />
-        <Container my={40}>
-          <Alert color="red">{error}</Alert>
-        </Container>
-      </>
-    );
-  }
-
-  const renderRows = (list: Shelter[]) =>
-    list.map((shelter) => (
-      <Table.Tr key={shelter.id}>
-        <Table.Td>{shelter.name}</Table.Td>
-        <Table.Td>{shelter.email}</Table.Td>
-        <Table.Td>{shelter.location}</Table.Td>
-        <Table.Td>
-          {shelter.is_verified
-            ? <Badge color="green">Verified</Badge>
-            : <Badge color="yellow">Pending</Badge>
-          }
-        </Table.Td>
-        <Table.Td>
-          {!shelter.is_verified && (
-            <Button
-              size="xs"
-              loading={verifying === shelter.id}
-              onClick={() => handleVerify(shelter.id)}
-            >
-              Verify
-            </Button>
-          )}
-        </Table.Td>
-      </Table.Tr>
-    ));
+  if (error) return (
+    <>
+      <Topbar />
+      <Container my={40}><Alert color="red">{error}</Alert></Container>
+    </>
+  );
 
   return (
     <>
       <Topbar />
       <Container my={40}>
         <Group justify="space-between" mb="lg">
-          <Title order={2}>Shelters</Title>
-          <Badge color="yellow" variant="light">{pending.length} pending</Badge>
+          <Title order={2}>Unassigned Shelter Verifications</Title>
+          <Badge color="yellow" variant="light">{unverified.length} pending</Badge>
         </Group>
 
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>Location</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {renderRows(pending)}
-            {renderRows(verified)}
-          </Table.Tbody>
-        </Table>
+        {unverified.length === 0 ? (
+          <Text c="dimmed">No shelters pending verification.</Text>
+        ) : (
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>Location</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {unverified.map((shelter) => (
+                <Table.Tr key={shelter.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/shelter/profile/${shelter.id}`)}>
+                  <Table.Td>{shelter.name}</Table.Td>
+                  <Table.Td>{shelter.email}</Table.Td>
+                  <Table.Td>{shelter.location}</Table.Td>
+                  <Table.Td onClick={(e) => e.stopPropagation()}>
+                    <Button size="xs" variant="outline" loading={claiming === shelter.id} onClick={() => handleClaim(shelter.id)}>
+                      Claim
+                    </Button>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        )}
       </Container>
     </>
   );

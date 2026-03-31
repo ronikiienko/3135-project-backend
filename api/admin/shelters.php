@@ -17,7 +17,7 @@ if ($admin['is_deleted']) {
 
 $stmt = $db->query('
     SELECT u.id, u.email, u.avatar_filename, u.is_deleted,
-           s.name, s.is_verified, s.location, s.description, s.rating, s.suspended_until
+           s.name, s.is_verified, s.location, s.description, s.rating, s.suspended_until, s.assigned_admin_id
     FROM users u
     JOIN shelters s ON s.id = u.id
     WHERE u.is_deleted = false
@@ -34,8 +34,9 @@ foreach ($stmt->fetchAll() as $row) {
         'is_verified'     => (bool) $row['is_verified'],
         'location'        => $row['location'],
         'description'     => $row['description'],
-        'rating'          => $row['rating'] !== null ? (float) $row['rating'] : null,
-        'suspended_until' => $row['suspended_until'],
+        'rating'             => $row['rating'] !== null ? (float) $row['rating'] : null,
+        'suspended_until'    => $row['suspended_until'],
+        'assigned_admin_id'  => $row['assigned_admin_id'] !== null ? (int) $row['assigned_admin_id'] : null,
     ];
 }
 
