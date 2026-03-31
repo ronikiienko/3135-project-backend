@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button, Modal, Textarea,
+  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button, Modal, Textarea, Rating,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
-import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, payForRental, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental } from '../api/rental';
+import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, payForRental, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental, createReview, getReviews } from '../api/rental';
 import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const RentalPage: React.FC = () => {
@@ -28,6 +28,11 @@ const RentalPage: React.FC = () => {
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
 
+  const [reviewBody, setReviewBody] = useState('');
+  const [reviewScore, setReviewScore] = useState(0);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
   // Shelter confirm form state
   const [showConfirmForm, setShowConfirmForm] = useState(false);
   const [suggestedBegins, setSuggestedBegins] = useState<string | null>(null);
@@ -37,8 +42,24 @@ const RentalPage: React.FC = () => {
     if (!id) return;
     setLoading(true);
     getRental(Number(id)).then((data) => {
-      if (data.error) setError('Rental not found or access denied.');
-      else if (data.rental) setRental(data.rental);
+      if (data.error) {
+        setError('Rental not found or access denied.');
+        setLoading(false);
+        return;
+      }
+      const fetchedRental = data.rental!;
+      setRental(fetchedRental);
+
+      // Check if current user already reviewed this rental
+      if (role === 'RENTER' || role === 'SHELTER') {
+        const reviewedId = role === 'RENTER' ? fetchedRental.shelter_id : fetchedRental.renter_id;
+        getReviews(reviewedId).then((reviewsData) => {
+          if (reviewsData.reviews?.some((r) => r.rental_id === fetchedRental.id)) {
+            setReviewSubmitted(true);
+          }
+        });
+      }
+
       setLoading(false);
     });
   };
@@ -488,6 +509,58 @@ const RentalPage: React.FC = () => {
                   </Button>
                 </Group>
               </Stack>
+            );
+          })()}
+          {/* Review section */}
+          {(() => {
+            const renterQualifying = ['PEACEFULLY_TERMINATED', 'DISPUTE_IN_FAVOR_OF_SHELTER', 'DISPUTE_IN_FAVOR_OF_RENTER', 'SHELTER_CANCELLED'];
+            const shelterQualifying = ['PEACEFULLY_TERMINATED', 'DISPUTE_IN_FAVOR_OF_SHELTER', 'DISPUTE_IN_FAVOR_OF_RENTER', 'PAYMENT_EXPIRED'];
+            const canReview = (role === 'RENTER' && renterQualifying.includes(rental.status)) ||
+                              (role === 'SHELTER' && shelterQualifying.includes(rental.status));
+            if (!canReview) return null;
+
+            const reviewedId = role === 'RENTER' ? rental.shelter_id : rental.renter_id;
+
+            const handleSubmitReview = async () => {
+              if (!reviewBody.trim() || reviewScore === 0) return;
+              setActionLoading(true);
+              setReviewError(null);
+              const result = await createReview(rental.id, reviewedId, reviewBody, reviewScore / 5);
+              setActionLoading(false);
+              if (result.error === 'ALREADY_REVIEWED') {
+                setReviewError('You have already left a review for this rental.');
+              } else if (result.error) {
+                setReviewError('Failed to submit review.');
+              } else {
+                setReviewSubmitted(true);
+              }
+            };
+
+            return (
+              <Paper withBorder p="md" radius="md">
+                <Stack gap="sm">
+                  <Title order={5}>Leave a Review</Title>
+                  {reviewSubmitted ? (
+                    <Text size="sm" c="green">Review submitted. Thank you!</Text>
+                  ) : (
+                    <>
+                      {reviewError && <Alert color="red">{reviewError}</Alert>}
+                      <Rating value={reviewScore} onChange={setReviewScore} />
+                      <Textarea
+                        placeholder="Share your experience..."
+                        value={reviewBody}
+                        onChange={(e) => setReviewBody(e.currentTarget.value)}
+                        minRows={3}
+                      />
+                      <Group>
+                        <Button size="sm" onClick={handleSubmitReview} loading={actionLoading} disabled={!reviewBody.trim() || reviewScore === 0}>
+                          Submit Review
+                        </Button>
+                      </Group>
+                    </>
+                  )}
+                </Stack>
+              </Paper>
             );
           })()}
         </Stack>

@@ -192,6 +192,7 @@ const reportSchema = z.object({
 
 const reviewSchema = z.object({
     id: idSchema,
+    rental_id: idSchema,
     reviewer_id: idSchema,
     reviewed_id: idSchema,
     body: z.string(),
@@ -1169,22 +1170,26 @@ Backend should run periodic code that:
 
 ## Review
 
-### POST /review/createReview?reviewedId=
+### POST /review/createReview?rentalId=&reviewedId=
 Authenticated.
 
 Roles allowed: shelter or renter
 
-Logic: creates a review for shelter or renter depending on who is making request.
-Currently we do not enforce that review can only be created after rental is completed
-need to ensure that user with reviewedId exists and has correct role (forbidden if not correct role).
-Because renter can only review shelter and shelter can only review renter.
-Only non deleted users can review.
-but, ALLOW reviewing deleted users
+Logic: creates a review tied to a specific rental.
+- Renter can only review shelter; shelter can only review renter.
+- Only non-deleted users can review. Reviewing deleted users is allowed.
+- The rental must exist, belong to the reviewer, and be in a qualifying status:
+  - Renter qualifying statuses: PEACEFULLY_TERMINATED, DISPUTE_IN_FAVOR_OF_SHELTER, DISPUTE_IN_FAVOR_OF_RENTER, SHELTER_CANCELLED
+  - Shelter qualifying statuses: PEACEFULLY_TERMINATED, DISPUTE_IN_FAVOR_OF_SHELTER, DISPUTE_IN_FAVOR_OF_RENTER, PAYMENT_EXPIRED
+- reviewedId must match the other party on that rental (shelter_id or renter_id).
+- Only one review allowed per rental per reviewer role (ALREADY_REVIEWED if duplicate).
+- After inserting, recalculates and updates the `rating` field on the reviewed user's shelters/renters row.
 
 Payload:
 ```typescript
 const payloadSchema = reviewSchema.omit({
     id: true,
+    rental_id: true,
     reviewer_id: true,
     reviewed_id: true,
 })
@@ -1208,6 +1213,10 @@ const responseSchema = z.union([
     // status: 404
     z.object({
         error: z.literal("REVIEWED_USER_NOT_FOUND")
+    }),
+    // status: 409
+    z.object({
+        error: z.literal("ALREADY_REVIEWED")
     }),
     // status: 400
     z.object({

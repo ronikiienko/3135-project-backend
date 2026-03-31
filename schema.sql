@@ -149,7 +149,7 @@ CREATE TABLE reviews
     reviewer_id int,
     FOREIGN KEY (reviewer_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
     reviewed_id int NOT NULL,
-    FOREIGN KEY (reviewed_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (reviewed_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
     body        text          NOT NULL,
     score       decimal(3, 2) NOT NULL
 );

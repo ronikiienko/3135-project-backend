@@ -84,6 +84,35 @@ export async function cancelRentalRequest(rentalId: number): Promise<{ error?: s
   return res.json();
 }
 
+export interface Review {
+  id: number;
+  rental_id: number;
+  reviewer_id: number;
+  reviewer_name: string;
+  reviewed_id: number;
+  body: string;
+  score: number;
+  created_at: string;
+  listing_id: number | null;
+  listing_name: string | null;
+  rental_status: string | null;
+}
+
+export async function getReviews(reviewedId: number): Promise<{ reviews?: Review[]; error?: string }> {
+  const res = await fetch(`${BASE_URL}/reviews.php?reviewedId=${reviewedId}`, { credentials: 'include' });
+  return res.json();
+}
+
+export async function createReview(rentalId: number, reviewedId: number, body: string, score: number): Promise<{ review?: object; error?: string }> {
+  const res = await fetch(`${BASE_URL}/review/createReview.php?rentalId=${rentalId}&reviewedId=${reviewedId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ body, score }),
+  });
+  return res.json();
+}
+
 export async function payForRental(rentalId: number): Promise<{ url?: string; error?: string }> {
   const res = await fetch(`${BASE_URL}/renter/pay.php?rentalId=${rentalId}`, {
     method: 'POST',

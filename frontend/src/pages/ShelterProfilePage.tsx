@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge } from '@mantine/core';
+import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge, Rating, Divider, Anchor } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
+import { getReviews, Review } from '../api/rental';
+import { statusLabel, statusColor } from '../utils/rentalStatus';
 import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
 
 const ShelterProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [shelter, setShelter] = useState<ShelterPublicProfile | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -15,6 +20,9 @@ const ShelterProfilePage: React.FC = () => {
     getShelterProfile(Number(id)).then((data) => {
       if (data.error) setError('Shelter not found.');
       else if (data.shelter) setShelter(data.shelter);
+    });
+    getReviews(Number(id)).then((data) => {
+      if (data.reviews) setReviews(data.reviews);
     });
   }, [id]);
 
@@ -80,6 +88,39 @@ const ShelterProfilePage: React.FC = () => {
                     <Image key={filename} src={`${PROFILE_IMAGES_URL}/${filename}`} radius="md" fit="cover" h={120} />
                   ))}
                 </SimpleGrid>
+              </Stack>
+            )}
+
+            {reviews.length > 0 && (
+              <Stack gap="sm">
+                <Divider />
+                <Text fw={500}>Reviews</Text>
+                {reviews.map((review) => (
+                  <Paper key={review.id} withBorder p="sm" radius="md">
+                    <Stack gap={4}>
+                      <Group justify="space-between">
+                        <Anchor size="sm" fw={500} onClick={() => navigate(`/renter/profile/${review.reviewer_id}`)} style={{ cursor: 'pointer' }}>
+                          {review.reviewer_name}
+                        </Anchor>
+                        <Text size="xs" c="dimmed">{new Date(review.created_at).toLocaleDateString()}</Text>
+                      </Group>
+                      <Rating value={review.score * 5} readOnly fractions={2} />
+                      <Text size="sm">{review.body}</Text>
+                      <Group gap="xs">
+                        {review.listing_id && (
+                          <Anchor size="xs" c="dimmed" onClick={() => navigate(`/listing/${review.listing_id}`)} style={{ cursor: 'pointer' }}>
+                            Re: {review.listing_name}
+                          </Anchor>
+                        )}
+                        {review.rental_status && (
+                          <Badge size="xs" color={statusColor[review.rental_status]} variant="light">
+                            {statusLabel[review.rental_status] ?? review.rental_status}
+                          </Badge>
+                        )}
+                      </Group>
+                    </Stack>
+                  </Paper>
+                ))}
               </Stack>
             )}
 
