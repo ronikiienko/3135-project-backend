@@ -50,6 +50,22 @@ export async function respondToRentalRequest(
   return res.json();
 }
 
+export async function withdrawFromRental(rentalId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/shelter/withdrawFromRental.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function cancelRental(rentalId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/shelter/cancelRental.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function respondToRentalTerms(
   rentalId: number,
   payload: { response: 'ACCEPT' | 'DECLINE' }

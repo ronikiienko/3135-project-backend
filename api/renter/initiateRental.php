@@ -23,16 +23,6 @@ if ($renter['suspended_until'] !== null && strtotime($renter['suspended_until'])
     error_response('FORBIDDEN', 403);
 }
 
-$stmt = $db->prepare("
-    SELECT id FROM rentals
-    WHERE renter_id = :renter_id AND listing_id = :listing_id
-    AND status IN ('REQUESTED', 'PAYMENT_PENDING', 'PAID')
-");
-$stmt->execute([':renter_id' => $session['user_id'], ':listing_id' => $listingId]);
-if ($stmt->fetch()) {
-    error_response('FORBIDDEN', 403);
-}
-
 $stmt = $db->prepare('SELECT id, shelter_id, is_closed FROM listings WHERE id = :id');
 $stmt->execute([':id' => $listingId]);
 $listing = $stmt->fetch();

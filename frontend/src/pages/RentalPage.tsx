@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button,
+  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button, Modal,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
-import { Rental, getRental, respondToRentalRequest, respondToRentalTerms } from '../api/rental';
+import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, withdrawFromRental, cancelRental } from '../api/rental';
 import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const RentalPage: React.FC = () => {
@@ -19,6 +19,8 @@ const RentalPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Shelter confirm form state
   const [showConfirmForm, setShowConfirmForm] = useState(false);
@@ -90,6 +92,32 @@ const RentalPage: React.FC = () => {
     setActionLoading(true);
     setActionError(null);
     const result = await respondToRentalTerms(rental.id, { response: 'DECLINE' });
+    setActionLoading(false);
+    if (result.error) {
+      setActionError(result.error);
+    } else {
+      fetchRental();
+    }
+  };
+
+  const handleShelterWithdraw = async () => {
+    if (!rental) return;
+    setActionLoading(true);
+    setActionError(null);
+    const result = await withdrawFromRental(rental.id);
+    setActionLoading(false);
+    if (result.error) {
+      setActionError(result.error);
+    } else {
+      fetchRental();
+    }
+  };
+
+  const handleShelterCancel = async () => {
+    if (!rental) return;
+    setActionLoading(true);
+    setActionError(null);
+    const result = await cancelRental(rental.id);
     setActionLoading(false);
     if (result.error) {
       setActionError(result.error);
@@ -201,14 +229,29 @@ const RentalPage: React.FC = () => {
           {role === 'SHELTER' && rental.status === 'REQUESTED' && (
             <Stack gap="sm">
               {!showConfirmForm ? (
-                <Group>
-                  <Button color="green" onClick={() => setShowConfirmForm(true)} loading={actionLoading}>
-                    Accept
-                  </Button>
-                  <Button color="red" variant="outline" onClick={handleShelterDeny} loading={actionLoading}>
-                    Decline
-                  </Button>
-                </Group>
+                <Stack gap="xs">
+                  <Text size="sm" c="dimmed">
+                    <strong>Accept</strong> to propose a rental period and cost — the renter will have 24 hours to pay.{' '}
+                    <strong>Decline</strong> to reject this request.
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    Once the renter pays, you can still cancel the rental — but this will fully refund them.
+                    If the renter hasn't paid within 24 hours, the request expires automatically.
+                    You can also withdraw your proposed terms at any time before the renter pays.
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    Payment is released to you 24 hours after the rental ends, provided the renter has not raised a dispute.
+                    If a dispute is opened, an admin will review it and decide the outcome.
+                  </Text>
+                  <Group>
+                    <Button color="green" onClick={() => setShowConfirmForm(true)} loading={actionLoading}>
+                      Accept
+                    </Button>
+                    <Button color="red" variant="outline" onClick={handleShelterDeny} loading={actionLoading}>
+                      Decline
+                    </Button>
+                  </Group>
+                </Stack>
               ) : (
                 <Paper withBorder p="md" radius="md">
                   <Stack gap="sm">
@@ -241,6 +284,62 @@ const RentalPage: React.FC = () => {
             </Stack>
           )}
 
+          {/* Shelter withdraw for PAYMENT_PENDING status */}
+          {role === 'SHELTER' && rental.status === 'PAYMENT_PENDING' && (
+            <Stack gap="xs">
+              <Text size="sm" c="dimmed">
+                Changed your mind? <strong>Withdraw</strong> to cancel the proposed terms. The renter will be notified and no payment will be taken.
+              </Text>
+              <Group>
+                <Button color="red" variant="outline" onClick={handleShelterWithdraw} loading={actionLoading}>
+                  Withdraw
+                </Button>
+              </Group>
+            </Stack>
+          )}
+
+          {/* Shelter cancel for PAID status */}
+          {role === 'SHELTER' && rental.status === 'PAID' && (
+            <Stack gap="xs">
+              <Alert color="orange" title="Cancelling will refund the renter">
+                If you cancel this rental, the full payment of ${rental.total_cost?.toFixed(2)} will be returned to the renter. This cannot be undone.
+              </Alert>
+              <Group>
+                <Button color="red" variant="outline" onClick={() => setShowCancelModal(true)} loading={actionLoading}>
+                  Cancel Rental
+                </Button>
+              </Group>
+            </Stack>
+          )}
+
+          <Modal
+            opened={showCancelModal}
+            onClose={() => setShowCancelModal(false)}
+            title="Cancel this rental?"
+            centered
+          >
+            <Stack gap="md">
+              <Text>
+                This will cancel the rental and refund <strong>${rental.total_cost?.toFixed(2)}</strong> to the renter. This action cannot be undone.
+              </Text>
+              <Group justify="flex-end">
+                <Button variant="outline" onClick={() => setShowCancelModal(false)} disabled={actionLoading}>
+                  Go back
+                </Button>
+                <Button
+                  color="red"
+                  loading={actionLoading}
+                  onClick={async () => {
+                    await handleShelterCancel();
+                    setShowCancelModal(false);
+                  }}
+                >
+                  Yes, cancel rental
+                </Button>
+              </Group>
+            </Stack>
+          </Modal>
+
           {/* Renter actions for PAYMENT_PENDING status */}
           {role === 'RENTER' && rental.status === 'PAYMENT_PENDING' && (
             <Stack gap="sm">
@@ -258,14 +357,29 @@ const RentalPage: React.FC = () => {
                   )}
                 </Stack>
               </Paper>
-              <Group>
-                <Button color="green" onClick={handleRenterAccept} loading={actionLoading}>
-                  Accept Terms
-                </Button>
-                <Button color="red" variant="outline" onClick={handleRenterDecline} loading={actionLoading}>
-                  Decline Terms
-                </Button>
-              </Group>
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed">
+                  <strong>Accept</strong> to confirm the rental and complete payment.{' '}
+                  <strong>Decline</strong> to reject these terms — no payment will be taken.
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Your payment is held securely until the rental period ends. The shelter receives the funds 24 hours after the rental ends, once no dispute has been raised.
+                </Text>
+                <Text size="sm" c="dimmed">
+                  If something goes wrong during the rental, you have 24 hours after it ends to raise a dispute. An admin will review it and decide the outcome.
+                </Text>
+                <Text size="sm" c="orange.7">
+                  Once you accept, your payment is non-refundable except through a dispute. The shelter can cancel the rental, but outside of that there is no other way to get your money back.
+                </Text>
+                <Group>
+                  <Button color="green" onClick={handleRenterAccept} loading={actionLoading}>
+                    Accept Terms
+                  </Button>
+                  <Button color="red" variant="outline" onClick={handleRenterDecline} loading={actionLoading}>
+                    Decline Terms
+                  </Button>
+                </Group>
+              </Stack>
             </Stack>
           )}
         </Stack>

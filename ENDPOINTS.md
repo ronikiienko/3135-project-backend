@@ -130,7 +130,7 @@ const rentalStatusSchema = z.enum([
     "RENTER_DECLINED", // renter declined shelter's proposed terms
     "SHELTER_WITHDREW", // shelter withdrew from rental after accepting it but before renter paid
     "PAID", // rental paid (final acceptance of rental terms by renter)
-    "DISPUTE", // when either shelter or renter creates dispute for rental
+    "DISPUTE", // when renter creates dispute for rental
     "PEACEFULLY_TERMINATED", // When rental period ends and there are no disputes in 24 hours after rental end time
     "DISPUTE_IN_FAVOR_OF_SHELTER", // when admin resolves dispute in favor of shelter
     "DISPUTE_IN_FAVOR_OF_RENTER", // when admin resolves dispute in favor of renter
@@ -553,7 +553,6 @@ We do NOT enforce that there are no other rentals for the same listing from diff
 Only not deleted renters can initiate rentals (add check everywhere for not deleted users).
 Listing must not be closed (if closed, then forbidden)
 Forbidden if renter is suspended.
-Forbidden if renter already has an active rental for this listing (status is REQUESTED, PAYMENT_PENDING, or PAID).
 
 Payload:
 ```typescript
@@ -801,11 +800,10 @@ const responseSchema = z.union([
 ### PATCH /rental/dispute?rentalId=
 Authenticated.
 
-Roles allowed: shelter or renter.
+Roles allowed: renter.
 
-Logic: create dispute for rental. Only shelter or renter that owns listing can dispute rental.
-Only VERIFIED shelters can dispute rentals.
-Only not deleted shelters or renters can dispute rentals
+Logic: create dispute for rental. Only the renter that belongs to the rental can open a dispute.
+Only not deleted renters can dispute rentals.
 Only rentals in "PAID" status can be disputed.
 Switches rental status to "DISPUTE" and sets dispute reason.
 
