@@ -57,10 +57,10 @@ const RenterRentalsPage: React.FC = () => {
         ) : (
           <Stack>
             {rentals.map((r) => (
-              <Card key={r.id} withBorder padding="sm" radius="md" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${r.listing_id}`)}>
+              <Card key={r.id} withBorder padding="sm" radius="md" style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/${r.id}`)}>
                 <Group justify="space-between">
                   <Stack gap={2}>
-                    <Text fw={600}>Listing #{r.listing_id}</Text>
+                    <Text fw={600}>{r.listing_name ?? `Listing #${r.listing_id}`}</Text>
                     {r.rental_begins && r.rental_ends && (
                       <Text size="sm" c="dimmed">
                         {new Date(r.rental_begins).toLocaleDateString()} — {new Date(r.rental_ends).toLocaleDateString()}

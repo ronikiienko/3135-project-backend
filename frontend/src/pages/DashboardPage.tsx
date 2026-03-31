@@ -68,21 +68,22 @@ const ShelterDashboard: React.FC = () => {
     setListingMap((prev) => new Map(prev).set(listing.id, listing));
   };
 
-  const pendingRentals = rentals.filter((r) => r.status === 'REQUESTED');
+  const activeStatuses = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'];
+  const activeRentals = rentals.filter((r) => activeStatuses.includes(r.status));
 
   return (
     <Container my={40}>
       {loading ? <Loader /> : (
         <Stack gap="xl">
-          {pendingRentals.length > 0 && (
+          {activeRentals.length > 0 && (
             <Stack gap="sm">
               <Group gap="sm">
-                <Title order={2}>Rental Requests</Title>
-                <Badge color="yellow">{pendingRentals.length}</Badge>
+                <Title order={2}>Active Rentals</Title>
+                <Badge color="yellow">{activeRentals.length}</Badge>
               </Group>
               <Stack gap="xs">
-                {pendingRentals.map((r) => (
-                  <Card key={r.id} withBorder padding="sm" radius="md">
+                {activeRentals.map((r) => (
+                  <Card key={r.id} withBorder padding="sm" radius="md" style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/${r.id}`)}>
                     <Group justify="space-between">
                       <Stack gap={2}>
                         <Text fw={600}>{listingMap.get(r.listing_id)?.name ?? `Listing #${r.listing_id}`}</Text>

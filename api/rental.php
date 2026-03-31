@@ -10,18 +10,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $session = require_auth(['SHELTER', 'RENTER']);
 $db      = get_db();
 
-$joinSql = 'SELECT r.*, l.name AS listing_name FROM rentals r LEFT JOIN listings l ON l.id = r.listing_id';
-
-if ($session['role'] === 'SHELTER') {
-    $stmt = $db->prepare($joinSql . ' WHERE r.shelter_id = :id');
-} else {
-    $stmt = $db->prepare($joinSql . ' WHERE r.renter_id = :id');
+$rentalId = isset($_GET['rentalId']) ? (int) $_GET['rentalId'] : null;
+if (!$rentalId) {
+    error_response('PAYLOAD_MALFORMED', 400);
 }
-$stmt->execute([':id' => $session['user_id']]);
 
-$rentals = [];
-foreach ($stmt->fetchAll() as $row) {
-    $rentals[] = [
+$stmt = $db->prepare('SELECT r.*, l.name AS listing_name FROM rentals r LEFT JOIN listings l ON l.id = r.listing_id WHERE r.id = :id');
+$stmt->execute([':id' => $rentalId]);
+$row = $stmt->fetch();
+
+if (!$row) {
+    error_response('RENTAL_NOT_FOUND', 404);
+}
+
+if ($session['role'] === 'SHELTER' && (int) $row['shelter_id'] !== $session['user_id']) {
+    error_response('FORBIDDEN', 403);
+}
+if ($session['role'] === 'RENTER' && (int) $row['renter_id'] !== $session['user_id']) {
+    error_response('FORBIDDEN', 403);
+}
+
+json_response([
+    'rental' => [
         'id'                    => (int) $row['id'],
         'shelter_id'            => (int) $row['shelter_id'],
         'renter_id'             => (int) $row['renter_id'],
@@ -35,7 +45,5 @@ foreach ($stmt->fetchAll() as $row) {
         'dispute_reason'        => $row['dispute_reason'],
         'total_cost'            => $row['total_cost'] !== null ? (float) $row['total_cost'] : null,
         'stripe_transaction_id' => $row['stripe_transaction_id'],
-    ];
-}
-
-json_response(['rentals' => $rentals]);
+    ],
+]);

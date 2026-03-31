@@ -5,6 +5,7 @@ export interface Rental {
   shelter_id: number;
   renter_id: number;
   listing_id: number;
+  listing_name: string | null;
   assigned_admin_id: number | null;
   rental_begins: string | null;
   rental_ends: string | null;
@@ -24,6 +25,37 @@ export async function initiateRental(listingId: number): Promise<{ rental?: Rent
   const res = await fetch(`${BASE_URL}/renter/initiateRental.php?listingId=${listingId}`, {
     method: 'POST',
     credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function getRental(rentalId: number): Promise<{ rental?: Rental; error?: string }> {
+  const res = await fetch(`${BASE_URL}/rental.php?rentalId=${rentalId}`, { credentials: 'include' });
+  return res.json();
+}
+
+export async function respondToRentalRequest(
+  rentalId: number,
+  payload: { response: 'CONFIRM'; suggestedRentalBegins: string; suggestedRentalEnds: string } | { response: 'DENY' }
+): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/shelter/respondToRentalRequest.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+export async function respondToRentalTerms(
+  rentalId: number,
+  payload: { response: 'ACCEPT' | 'DECLINE' }
+): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/renter/respondToRentalTerms.php?rentalId=${rentalId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
   });
   return res.json();
 }

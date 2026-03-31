@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "parcel src/index.html --dist-dir ../public/dist --public-url ./",
+    "start": "parcel watch src/index.html --dist-dir ../public/dist --public-url ./",
     "build": "parcel build src/index.html --dist-dir ../public/dist --public-url ./",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,9 +16,11 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.12",
+    "@mantine/dates": "^8.3.18",
     "@mantine/form": "^8.3.12",
     "@mantine/hooks": "^8.3.12",
     "@mantine/notifications": "^8.3.12",
+    "dayjs": "^1.11.20",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-icons": "^5.5.0",

@@ -145,6 +145,7 @@ const rentalSchema = z.object({
     shelter_id: idSchema,
     renter_id: idSchema,
     listing_id: idSchema,
+    listing_name: z.string().nullable(),
     assigned_admin_id: idSchema.nullable(),
     rental_begins: timestampSchema.nullable(),
     rental_ends: timestampSchema.nullable(),
@@ -962,6 +963,50 @@ const responseSchema = z.union([
     // status: 403
     z.object({
         error: z.literal("FORBIDDEN")
+    }),
+    // status: 500
+    z.object({
+        error: z.literal("INTERNAL_SERVER")
+    }),
+]);
+```
+
+### GET /rental
+Authenticated.
+
+Roles allowed: shelter or renter
+
+Logic: returns a single rental by ID. The requesting user must own the rental (shelter_id or renter_id must match session user).
+
+Payload:
+```typescript
+const payloadSchema = z.object({
+    rentalId: z.number(),
+});
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({
+        rental: rentalSchema,
+    }),
+    // status: 400
+    z.object({
+        error: z.literal("PAYLOAD_MALFORMED")
+    }),
+    // status: 401
+    z.object({
+        error: z.literal("UNAUTHENTICATED")
+    }),
+    // status: 403
+    z.object({
+        error: z.literal("FORBIDDEN")
+    }),
+    // status: 404
+    z.object({
+        error: z.literal("RENTAL_NOT_FOUND")
     }),
     // status: 500
     z.object({

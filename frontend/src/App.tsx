@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -12,6 +13,7 @@ import AdminSheltersPage from './pages/AdminSheltersPage';
 import ListingPage from './pages/ListingPage';
 import ShelterProfilePage from './pages/ShelterProfilePage';
 import RenterRentalsPage from './pages/RenterRentalsPage';
+import RentalPage from './pages/RentalPage';
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -32,6 +34,7 @@ const App: React.FC = () => {
           <Route path="/listing/:id" element={<ListingPage />} />
           <Route path="/shelter/profile/:id" element={<ShelterProfilePage />} />
           <Route path="/renter/rentals" element={<RenterRentalsPage />} />
+          <Route path="/rental/:id" element={<RentalPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
