@@ -26,18 +26,12 @@ const ConversationsPage: React.FC = () => {
     </>
   );
 
-  if (error) return (
-    <>
-      <Topbar />
-      <Container my={40}><Alert color="red">{error}</Alert></Container>
-    </>
-  );
-
   return (
     <>
       <Topbar />
       <Container my={40} size="sm">
         <Stack gap="md">
+          {error && <Alert color="red">{error}</Alert>}
           <Title order={2}>Messages</Title>
           {conversations.length === 0 ? (
             <Text c="dimmed">No conversations yet.</Text>

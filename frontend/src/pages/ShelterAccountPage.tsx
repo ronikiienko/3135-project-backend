@@ -31,19 +31,14 @@ const ShelterAccountPage: React.FC = () => {
     });
   }, []);
 
-  if (error) {
+  if (!shelter && !error) {
     return (
-      <Container my={40}>
-        <Alert color="red">{error}</Alert>
-      </Container>
-    );
-  }
-
-  if (!shelter) {
-    return (
-      <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}>
-        <Loader />
-      </Container>
+      <>
+        <Topbar />
+        <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}>
+          <Loader />
+        </Container>
+      </>
     );
   }
 
@@ -51,7 +46,8 @@ const ShelterAccountPage: React.FC = () => {
     <>
       <Topbar />
       <Container my={40}>
-      <Paper withBorder shadow="sm" p="xl" radius="md">
+        {error && <Alert color="red" mb="lg">{error}</Alert>}
+        {shelter && <Paper withBorder shadow="sm" p="xl" radius="md">
         <Stack>
           <Group>
             <Avatar
@@ -109,7 +105,7 @@ const ShelterAccountPage: React.FC = () => {
             </Stack>
           )}
         </Stack>
-      </Paper>
+      </Paper>}
     </Container>
     </>
   );

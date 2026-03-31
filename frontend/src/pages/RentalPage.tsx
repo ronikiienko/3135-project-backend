@@ -187,18 +187,13 @@ const RentalPage: React.FC = () => {
     </>
   );
 
-  if (error || !rental) return (
-    <>
-      <Topbar />
-      <Container my={40}><Alert color="red">{error ?? 'Rental not found.'}</Alert></Container>
-    </>
-  );
-
   return (
     <>
       <Topbar />
       <Container my={40} size="sm">
-        <Stack gap="lg">
+        {error && <Alert color="red" mb="lg">{error}</Alert>}
+        {!error && !rental && <Alert color="red">Rental not found.</Alert>}
+        {rental && <Stack gap="lg">
           <Group justify="space-between" align="flex-start">
             <Title order={2}>Rental #{rental.id}</Title>
             <Stack gap={4} align="flex-end">
@@ -563,7 +558,7 @@ const RentalPage: React.FC = () => {
               </Paper>
             );
           })()}
-        </Stack>
+        </Stack>}
       </Container>
 
       <Modal opened={showDisputeModal} onClose={() => { setShowDisputeModal(false); setDisputeReason(''); }} title="Raise a dispute" centered>

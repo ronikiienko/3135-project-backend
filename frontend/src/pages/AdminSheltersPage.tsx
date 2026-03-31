@@ -25,10 +25,10 @@ const AdminSheltersPage: React.FC = () => {
 
   const handleClaim = async (id: number) => {
     setClaiming(id);
+    setError(null);
     const data = await assignShelterVerification(id);
-    if (!data.error) {
-      setShelters((prev) => prev.map((s) => s.id === id ? { ...s, assigned_admin_id: adminId } : s));
-    }
+    if (data.error) setError(data.error);
+    else setShelters((prev) => prev.map((s) => s.id === id ? { ...s, assigned_admin_id: adminId } : s));
     setClaiming(null);
   };
 
@@ -41,13 +41,6 @@ const AdminSheltersPage: React.FC = () => {
     </>
   );
 
-  if (error) return (
-    <>
-      <Topbar />
-      <Container my={40}><Alert color="red">{error}</Alert></Container>
-    </>
-  );
-
   return (
     <>
       <Topbar />
@@ -56,6 +49,7 @@ const AdminSheltersPage: React.FC = () => {
           <Title order={2}>Unassigned Shelter Verifications</Title>
           <Badge color="yellow" variant="light">{unverified.length} pending</Badge>
         </Group>
+        {error && <Alert color="red" mb="md">{error}</Alert>}
 
         {unverified.length === 0 ? (
           <Text c="dimmed">No shelters pending verification.</Text>

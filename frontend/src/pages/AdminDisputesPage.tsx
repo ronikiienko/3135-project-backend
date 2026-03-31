@@ -25,10 +25,10 @@ const AdminDisputesPage: React.FC = () => {
 
   const handleClaim = async (id: number) => {
     setClaiming(id);
+    setError(null);
     const data = await assignDispute(id);
-    if (!data.error) {
-      setDisputes((prev) => prev.map((d) => d.id === id ? { ...d, assigned_admin_id: adminId } : d));
-    }
+    if (data.error) setError(data.error);
+    else setDisputes((prev) => prev.map((d) => d.id === id ? { ...d, assigned_admin_id: adminId } : d));
     setClaiming(null);
   };
 
@@ -36,13 +36,6 @@ const AdminDisputesPage: React.FC = () => {
     <>
       <Topbar />
       <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}><Loader /></Container>
-    </>
-  );
-
-  if (error) return (
-    <>
-      <Topbar />
-      <Container my={40}><Alert color="red">{error}</Alert></Container>
     </>
   );
 
@@ -54,6 +47,7 @@ const AdminDisputesPage: React.FC = () => {
           <Title order={2}>Unassigned Disputes</Title>
           <Badge color="red" variant="light">{disputes.length} open</Badge>
         </Group>
+        {error && <Alert color="red" mb="md">{error}</Alert>}
 
         {disputes.length === 0 ? (
           <Text c="dimmed">No open disputes.</Text>

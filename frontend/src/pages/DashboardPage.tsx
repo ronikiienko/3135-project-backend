@@ -17,6 +17,7 @@ const AdminDashboard: React.FC = () => {
   const [assignedShelters, setAssignedShelters] = useState<Shelter[]>([]);
   const [assignedDisputes, setAssignedDisputes] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<number | null>(null);
   const [resolving, setResolving] = useState<number | null>(null);
 
@@ -35,6 +36,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <Container my={40}>
       <Stack gap="xl">
+        {error && <Alert color="red">{error}</Alert>}
         {loading ? <Loader /> : (
           <>
             {(assignedShelters.length > 0 || assignedDisputes.length > 0) && (
@@ -59,9 +61,11 @@ const AdminDashboard: React.FC = () => {
                             loading={verifying === s.id}
                             onClick={async () => {
                               setVerifying(s.id);
+                              setError(null);
                               const result = await verifyShelter(s.id);
                               setVerifying(null);
-                              if (!result.error) setAssignedShelters((prev) => prev.filter((x) => x.id !== s.id));
+                              if (result.error) setError(result.error);
+                              else setAssignedShelters((prev) => prev.filter((x) => x.id !== s.id));
                             }}
                           >
                             Verify
@@ -86,9 +90,11 @@ const AdminDashboard: React.FC = () => {
                             loading={resolving === d.id}
                             onClick={async () => {
                               setResolving(d.id);
+                              setError(null);
                               const result = await resolveDispute(d.id, 'IN_FAVOR_OF_SHELTER');
                               setResolving(null);
-                              if (!result.error) setAssignedDisputes((prev) => prev.filter((x) => x.id !== d.id));
+                              if (result.error) setError(result.error);
+                              else setAssignedDisputes((prev) => prev.filter((x) => x.id !== d.id));
                             }}
                           >
                             Shelter wins
@@ -100,9 +106,11 @@ const AdminDashboard: React.FC = () => {
                             loading={resolving === d.id}
                             onClick={async () => {
                               setResolving(d.id);
+                              setError(null);
                               const result = await resolveDispute(d.id, 'IN_FAVOR_OF_RENTER');
                               setResolving(null);
-                              if (!result.error) setAssignedDisputes((prev) => prev.filter((x) => x.id !== d.id));
+                              if (result.error) setError(result.error);
+                              else setAssignedDisputes((prev) => prev.filter((x) => x.id !== d.id));
                             }}
                           >
                             Renter wins

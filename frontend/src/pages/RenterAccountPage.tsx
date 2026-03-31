@@ -30,19 +30,14 @@ const RenterAccountPage: React.FC = () => {
     });
   }, []);
 
-  if (error) {
+  if (!renter && !error) {
     return (
-      <Container my={40}>
-        <Alert color="red">{error}</Alert>
-      </Container>
-    );
-  }
-
-  if (!renter) {
-    return (
-      <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}>
-        <Loader />
-      </Container>
+      <>
+        <Topbar />
+        <Container my={40} style={{ display: 'flex', justifyContent: 'center' }}>
+          <Loader />
+        </Container>
+      </>
     );
   }
 
@@ -50,7 +45,8 @@ const RenterAccountPage: React.FC = () => {
     <>
       <Topbar />
       <Container my={40}>
-      <Paper withBorder shadow="sm" p="xl" radius="md">
+        {error && <Alert color="red" mb="lg">{error}</Alert>}
+        {renter && <Paper withBorder shadow="sm" p="xl" radius="md">
         <Stack>
           <Group>
             <Avatar
@@ -101,7 +97,7 @@ const RenterAccountPage: React.FC = () => {
             </Stack>
           )}
         </Stack>
-      </Paper>
+      </Paper>}
     </Container>
     </>
   );

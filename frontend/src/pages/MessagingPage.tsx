@@ -78,17 +78,11 @@ const MessagingPage: React.FC = () => {
     </>
   );
 
-  if (error) return (
-    <>
-      <Topbar />
-      <Container my={40}><Alert color="red">{error}</Alert></Container>
-    </>
-  );
-
   return (
     <>
       <Topbar />
       <Container my={40} size="sm">
+        {error && <Alert color="red" mb="md">{error}</Alert>}
         <Stack gap="md">
           <Title order={3}>Conversation with {correspondentName}</Title>
 
