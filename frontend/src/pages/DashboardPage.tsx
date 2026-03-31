@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Title, SimpleGrid, Card, Text, Button, Group, Loader, Image, Stack, Badge, Divider } from '@mantine/core';
+import { Container, Title, SimpleGrid, Card, Text, Button, Group, Loader, Image, Stack, Badge, Divider, Alert } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import CreateListingModal from '../components/CreateListingModal';
@@ -7,7 +7,7 @@ import { Listing, getListings } from '../api/listing';
 import { getShelterMe } from '../api/shelter';
 import { Rental, getRentals } from '../api/rental';
 import { LISTING_IMAGES_URL } from '../api/config';
-import { statusColor, statusLabel } from '../utils/rentalStatus';
+import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +56,10 @@ const ShelterDashboard: React.FC = () => {
 
   const activeStatuses = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'];
   const activeRentals = rentals.filter((r) => activeStatuses.includes(r.status));
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentlyClosed = rentals.filter(
+    (r) => !activeStatuses.includes(r.status) && r.closed_at && new Date(r.closed_at).getTime() >= sevenDaysAgo,
+  );
   const openListings = listings.filter((l) => !l.is_closed);
   const closedListings = listings.filter((l) => l.is_closed);
 
@@ -86,6 +90,33 @@ const ShelterDashboard: React.FC = () => {
                       </Stack>
                       <Badge color={statusColor[r.status] ?? 'gray'}>{statusLabel[r.status] ?? r.status}</Badge>
                     </Group>
+                  </Card>
+                ))}
+              </Stack>
+              <Divider />
+            </Stack>
+          )}
+
+          {recentlyClosed.length > 0 && (
+            <Stack gap="sm">
+              <Title order={3} c="dimmed">Recently Closed</Title>
+              <Stack gap="xs">
+                {recentlyClosed.map((r) => (
+                  <Card key={r.id} withBorder padding="sm" radius="md" style={{ cursor: 'pointer', opacity: 0.8 }} onClick={() => navigate(`/rental/${r.id}`)}>
+                    <Stack gap={6}>
+                      <Group justify="space-between">
+                        <Stack gap={2}>
+                          <Text fw={600}>{listingMap.get(r.listing_id)?.name ?? `Listing #${r.listing_id}`}</Text>
+                          <Text size="sm" c="dimmed">Renter: {r.renter_name}</Text>
+                        </Stack>
+                        <Badge color={statusColor[r.status] ?? 'gray'}>{statusLabel[r.status] ?? r.status}</Badge>
+                      </Group>
+                      {statusDescriptionShelter[r.status] && (
+                        <Alert color={statusColor[r.status] ?? 'gray'} variant="light" p="xs">
+                          <Text size="xs">{statusDescriptionShelter[r.status]}</Text>
+                        </Alert>
+                      )}
+                    </Stack>
                   </Card>
                 ))}
               </Stack>
@@ -175,6 +206,11 @@ const RenterDashboard: React.FC = () => {
 
   const activeRentals = rentals.filter((r) => activeStatuses.includes(r.status));
 
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentlyClosed = rentals.filter(
+    (r) => !activeStatuses.includes(r.status) && r.closed_at && new Date(r.closed_at).getTime() >= sevenDaysAgo,
+  );
+
   return (
     <Container my={40}>
       {loading ? <Loader /> : (
@@ -202,6 +238,33 @@ const RenterDashboard: React.FC = () => {
                       </Stack>
                       <Badge color={statusColor[r.status] ?? 'gray'}>{statusLabel[r.status] ?? r.status}</Badge>
                     </Group>
+                  </Card>
+                ))}
+              </Stack>
+              <Divider />
+            </Stack>
+          )}
+
+          {recentlyClosed.length > 0 && (
+            <Stack gap="sm">
+              <Title order={3} c="dimmed">Recently Closed</Title>
+              <Stack gap="xs">
+                {recentlyClosed.map((r) => (
+                  <Card key={r.id} withBorder padding="sm" radius="md" style={{ cursor: 'pointer', opacity: 0.8 }} onClick={() => navigate(`/rental/${r.id}`)}>
+                    <Stack gap={6}>
+                      <Group justify="space-between">
+                        <Stack gap={2}>
+                          <Text fw={600}>{r.listing_name}</Text>
+                          <Text size="sm" c="dimmed">Shelter: {r.shelter_name}</Text>
+                        </Stack>
+                        <Badge color={statusColor[r.status] ?? 'gray'}>{statusLabel[r.status] ?? r.status}</Badge>
+                      </Group>
+                      {statusDescriptionRenter[r.status] && (
+                        <Alert color={statusColor[r.status] ?? 'gray'} variant="light" p="xs">
+                          <Text size="xs">{statusDescriptionRenter[r.status]}</Text>
+                        </Alert>
+                      )}
+                    </Stack>
                   </Card>
                 ))}
               </Stack>

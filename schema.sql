@@ -108,7 +108,8 @@ CREATE TABLE rentals
         'PEACEFULLY_TERMINATED',
         'DISPUTE_IN_FAVOR_OF_SHELTER',
         'DISPUTE_IN_FAVOR_OF_RENTER',
-        'SHELTER_CANCELLED'
+        'SHELTER_CANCELLED',
+        'RENTER_CANCELLED'
     )                     NOT NULL,
     dispute_reason        text,
     total_cost            decimal(10, 2),

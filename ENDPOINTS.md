@@ -137,7 +137,10 @@ const rentalStatusSchema = z.enum([
     // shelter may discover that they can't provide pet (e.g emergency, animal got sick etc.)
     // after renter already paid for rental.
     // cancellation only applies after rental is paid and means that money goes back to renter
-    "SHELTER_CANCELLED", 
+    "SHELTER_CANCELLED",
+    // renter cancels their own request before shelter has accepted or declined it.
+    // no payment involved.
+    "RENTER_CANCELLED",
 ]);
 
 
@@ -715,6 +718,54 @@ const payloadSchema = z.object({
 }).or(z.object({
     response: z.literal("DECLINE"),
 }))
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({}),
+    // status: 401
+    z.object({
+        error: z.literal("UNAUTHENTICATED")
+    }),
+    // status: 403
+    z.object({
+        error: z.literal("FORBIDDEN")
+    }),
+    // status: 404
+    z.object({
+        error: z.literal("RENTAL_NOT_FOUND")
+    }),
+    // status: 409
+    z.object({
+        error: z.literal("WRONG_RENTAL_STATUS")
+    }),
+    // status: 500
+    z.object({
+        error: z.literal("INTERNAL_SERVER")
+    }),
+    // status: 400
+    z.object({
+        error: z.literal("PAYLOAD_MALFORMED")
+    }),
+])
+```
+
+### PATCH /renter/cancelRentalRequest?rentalId=
+Authenticated.
+
+Roles allowed: renter.
+
+Logic: renter cancels their own rental request before the shelter has responded. No payment is involved.
+Only the renter that belongs to the rental can cancel it.
+Only not deleted renters can cancel rental requests.
+Only works if rental is in "REQUESTED" status.
+Switches rental status to "RENTER_CANCELLED" and sets closed_at = NOW().
+
+Payload:
+```typescript
+const payloadSchema = z.object({});
 ```
 
 Response:
