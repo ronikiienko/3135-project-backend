@@ -20,6 +20,11 @@ import HelpPage from './pages/HelpPage';
 import MessagingPage from './pages/MessagingPage';
 import ConversationsPage from './pages/ConversationsPage';
 
+const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
+  const role = localStorage.getItem('role');
+  return role ? element : <Navigate to="/login" replace />;
+};
+
 const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
   return (
@@ -42,20 +47,20 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/shelter/account" element={<ShelterAccountPage />} />
-          <Route path="/renter/account" element={<RenterAccountPage />} />
-          <Route path="/admin/account" element={<AdminAccountPage />} />
-          <Route path="/admin/shelters" element={<AdminSheltersPage />} />
-          <Route path="/admin/disputes" element={<AdminDisputesPage />} />
-          <Route path="/listing/:id" element={<ListingPage />} />
-          <Route path="/shelter/profile/:id" element={<ShelterProfilePage />} />
-          <Route path="/renter/profile/:id" element={<RenterProfilePage />} />
-          <Route path="/rental/:id" element={<RentalPage />} />
-          <Route path="/rentals/history" element={<RentalHistoryPage />} />
-          <Route path="/help" element={<HelpPage />} />
-          <Route path="/messages" element={<ConversationsPage />} />
-          <Route path="/messages/:userId" element={<MessagingPage />} />
+          <Route path="/dashboard" element={<PrivateRoute element={<DashboardPage />} />} />
+          <Route path="/shelter/account" element={<PrivateRoute element={<ShelterAccountPage />} />} />
+          <Route path="/renter/account" element={<PrivateRoute element={<RenterAccountPage />} />} />
+          <Route path="/admin/account" element={<PrivateRoute element={<AdminAccountPage />} />} />
+          <Route path="/admin/shelters" element={<PrivateRoute element={<AdminSheltersPage />} />} />
+          <Route path="/admin/disputes" element={<PrivateRoute element={<AdminDisputesPage />} />} />
+          <Route path="/listing/:id" element={<PrivateRoute element={<ListingPage />} />} />
+          <Route path="/shelter/profile/:id" element={<PrivateRoute element={<ShelterProfilePage />} />} />
+          <Route path="/renter/profile/:id" element={<PrivateRoute element={<RenterProfilePage />} />} />
+          <Route path="/rental/:id" element={<PrivateRoute element={<RentalPage />} />} />
+          <Route path="/rentals/history" element={<PrivateRoute element={<RentalHistoryPage />} />} />
+          <Route path="/help" element={<PrivateRoute element={<HelpPage />} />} />
+          <Route path="/messages" element={<PrivateRoute element={<ConversationsPage />} />} />
+          <Route path="/messages/:userId" element={<PrivateRoute element={<MessagingPage />} />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
