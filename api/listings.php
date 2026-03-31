@@ -12,7 +12,7 @@ $db = get_db();
 
 $stmt = $db->query('
     SELECT l.id, l.shelter_id, l.name, l.species, l.age, l.description, l.is_closed, l.rate, l.created_at,
-           s.name AS shelter_name
+           s.name AS shelter_name, s.location AS shelter_location
     FROM listings l
     JOIN shelters s ON s.id = l.shelter_id
 ');
@@ -33,7 +33,8 @@ foreach ($stmt->fetchAll() as $row) {
         'is_closed'      => (bool) $row['is_closed'],
         'rate'           => (float) $row['rate'],
         'created_at'     => format_datetime($row['created_at']),
-        'shelter_name'   => $row['shelter_name'],
+        'shelter_name'     => $row['shelter_name'],
+        'shelter_location' => $row['shelter_location'],
         'listing_images' => $images,
     ];
 }

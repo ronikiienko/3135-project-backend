@@ -59,6 +59,16 @@ export async function createAdminToken(): Promise<{ adminToken?: string; expires
   return res.json();
 }
 
+export async function suspendUser(userId: number, suspendUntil: string | null): Promise<{ success?: boolean; error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/suspendUser.php?userId=${userId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ suspend_until: suspendUntil }),
+  });
+  return res.json();
+}
+
 export async function resolveDispute(rentalId: number, resolution: 'IN_FAVOR_OF_SHELTER' | 'IN_FAVOR_OF_RENTER'): Promise<{ error?: string }> {
   const res = await fetch(`${BASE_URL}/admin/resolveDispute.php?rentalId=${rentalId}`, {
     method: 'PATCH',

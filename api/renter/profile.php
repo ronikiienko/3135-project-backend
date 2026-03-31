@@ -31,7 +31,8 @@ json_response([
         'location'        => $renter['location'],
         'description'     => $renter['description'],
         'rating'          => $renter['rating'],
-        'avatar_filename' => $renter['avatar_filename'],
-        'profile_images'  => $renter['profile_images'],
+        'avatar_filename'  => $renter['avatar_filename'],
+        'profile_images'   => $renter['profile_images'],
+        'suspended_until'  => $renter['suspended_until'] ? format_datetime($renter['suspended_until']) : null,
     ],
 ]);

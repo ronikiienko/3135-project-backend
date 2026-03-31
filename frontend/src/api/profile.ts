@@ -9,6 +9,7 @@ export interface ShelterPublicProfile {
   rating: number | null;
   avatar_filename: string | null;
   profile_images: string[];
+  suspended_until: string | null;
 }
 
 export interface RenterPublicProfile {
@@ -20,6 +21,7 @@ export interface RenterPublicProfile {
   rating: number | null;
   avatar_filename: string | null;
   profile_images: string[];
+  suspended_until: string | null;
 }
 
 export async function getShelterProfile(shelterId: number): Promise<{ shelter?: ShelterPublicProfile; error?: string }> {

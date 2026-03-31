@@ -111,7 +111,7 @@ const ListingPage: React.FC = () => {
                 </Text>
                 <Text size="xs" c="dimmed">
                   You don't set dates when requesting — the shelter proposes the rental period as part of their response.
-                  You can <Anchor size="xs" onClick={() => navigate(`/messages/${listing.shelter_id}`)}>message the shelter</Anchor> beforehand to discuss availability.
+                  You can <Anchor size="xs" onClick={() => navigate(`/messages/${listing.shelter_id}`, { state: { correspondentName: shelter?.name ?? 'Shelter' } })}>message the shelter</Anchor> beforehand to discuss availability.
                 </Text>
               </Stack>
             )}

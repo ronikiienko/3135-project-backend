@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Title, SimpleGrid, Card, Text, Button, Group, Loader, Image, Stack, Badge, Divider, Alert } from '@mantine/core';
+import { Container, Title, SimpleGrid, Card, Text, Button, Group, Loader, Image, Stack, Badge, Divider, Alert, TextInput } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import CreateListingModal from '../components/CreateListingModal';
@@ -301,6 +301,9 @@ const RenterDashboard: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterName, setFilterName] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
+  const [filterDescription, setFilterDescription] = useState('');
 
   const activeStatuses = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'];
 
@@ -320,6 +323,12 @@ const RenterDashboard: React.FC = () => {
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const recentlyClosed = rentals.filter(
     (r) => !activeStatuses.includes(r.status) && r.closed_at && new Date(r.closed_at).getTime() >= sevenDaysAgo,
+  );
+
+  const filteredListings = listings.filter((l) =>
+    l.name.toLowerCase().includes(filterName.toLowerCase()) &&
+    (l.shelter_location ?? '').toLowerCase().includes(filterLocation.toLowerCase()) &&
+    l.description.toLowerCase().includes(filterDescription.toLowerCase()),
   );
 
   return (
@@ -385,11 +394,16 @@ const RenterDashboard: React.FC = () => {
 
           <Stack gap="sm">
             <Title order={2}>Available Pets</Title>
-            {listings.length === 0 ? (
-              <Text c="dimmed">No listings available right now.</Text>
+            <Group grow>
+              <TextInput placeholder="Search by name" value={filterName} onChange={(e) => setFilterName(e.currentTarget.value)} />
+              <TextInput placeholder="Filter by location" value={filterLocation} onChange={(e) => setFilterLocation(e.currentTarget.value)} />
+              <TextInput placeholder="Filter by description" value={filterDescription} onChange={(e) => setFilterDescription(e.currentTarget.value)} />
+            </Group>
+            {filteredListings.length === 0 ? (
+              <Text c="dimmed">{listings.length === 0 ? 'No listings available right now.' : 'No listings match your search.'}</Text>
             ) : (
               <SimpleGrid cols={3}>
-                {listings.map((l) => (
+                {filteredListings.map((l) => (
                   <Card key={l.id} withBorder shadow="sm" radius="md" padding="sm" style={{ cursor: 'pointer' }} onClick={() => navigate(`/listing/${l.id}`)}>
                     {l.listing_images[0] && (
                       <Card.Section mb="sm">
@@ -406,6 +420,7 @@ const RenterDashboard: React.FC = () => {
                     >
                       {l.shelter_name}
                     </Text>
+                    {l.shelter_location && <Text size="xs" c="dimmed">{l.shelter_location}</Text>}
                     <Text size="sm" mt="xs" lineClamp={2}>{l.description}</Text>
                     <Text size="xs" c="dimmed" mt={4}>Posted {new Date(l.created_at).toLocaleDateString()}</Text>
                   </Card>

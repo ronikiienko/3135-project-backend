@@ -1445,6 +1445,40 @@ const responseSchema = z.union([
 ])
 ```
 
+### POST /admin/suspendUser?userId=
+Authenticated.
+
+Roles allowed: admin
+
+Logic: suspends or unsuspends a renter or shelter by userId.
+User must exist and not be deleted.
+`suspend_until` must be a future timestamp, or null to lift the suspension.
+
+Payload:
+```typescript
+const payloadSchema = z.object({
+    suspend_until: timestampSchema.nullable(),
+});
+```
+
+Response:
+```typescript
+const responseSchema = z.union([
+    // status: 200
+    z.object({ success: z.literal(true) }),
+    // status: 400
+    z.object({ error: z.string() }),
+    // status: 401
+    z.object({ error: z.string() }),
+    // status: 403
+    z.object({ error: z.string() }),
+    // status: 404
+    z.object({ error: z.string() }),
+]);
+```
+
+---
+
 ### PATCH /admin/resolveReport?reportId=
 Authenticated.
 

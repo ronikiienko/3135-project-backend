@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Title, Text, Stack, Avatar, Group, Image, SimpleGrid, Loader, Alert, Paper, Badge, Rating, Divider, Anchor, Button } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
+import { DateTimePicker } from '@mantine/dates';
+import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
 import { getShelterProfile, ShelterPublicProfile } from '../api/profile';
 import { getReviews, Review } from '../api/rental';
 import { statusLabel, statusColor } from '../utils/rentalStatus';
 import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
+import { suspendUser } from '../api/admin';
 
 const ShelterProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +17,10 @@ const ShelterProfilePage: React.FC = () => {
   const [shelter, setShelter] = useState<ShelterPublicProfile | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [suspendUntil, setSuspendUntil] = useState<Date | null>(null);
+  const [suspending, setSuspending] = useState(false);
+  const [suspendError, setSuspendError] = useState<string | null>(null);
+  const role = localStorage.getItem('role');
 
   useEffect(() => {
     if (!id) return;
@@ -122,6 +129,69 @@ const ShelterProfilePage: React.FC = () => {
                     </Stack>
                   </Paper>
                 ))}
+              </Stack>
+            )}
+
+            {role === 'ADMIN' && (
+              <Stack gap="sm">
+                <Divider />
+                <Text fw={500}>Admin: Suspension</Text>
+                {shelter.suspended_until && new Date(shelter.suspended_until) > new Date() && (
+                  <Alert color="orange">
+                    Currently suspended until {new Date(shelter.suspended_until).toLocaleString()}.
+                  </Alert>
+                )}
+                {suspendError && <Alert color="red">{suspendError}</Alert>}
+                <Group align="flex-end">
+                  <DateTimePicker
+                    label="Suspend until"
+                    placeholder="Pick date and time"
+                    value={suspendUntil}
+                    onChange={setSuspendUntil}
+                    minDate={new Date()}
+                    clearable
+                  />
+                  <Button
+                    color="orange"
+                    loading={suspending}
+                    disabled={!suspendUntil}
+                    onClick={async () => {
+                      if (!suspendUntil) return;
+                      setSuspending(true);
+                      setSuspendError(null);
+                      const result = await suspendUser(shelter.id, new Date(suspendUntil).toISOString());
+                      setSuspending(false);
+                      if (result.error) {
+                        setSuspendError(result.error);
+                      } else {
+                        setShelter({ ...shelter, suspended_until: suspendUntil.toISOString() });
+                        setSuspendUntil(null);
+                      }
+                    }}
+                  >
+                    Suspend
+                  </Button>
+                  {shelter.suspended_until && new Date(shelter.suspended_until) > new Date() && (
+                    <Button
+                      color="gray"
+                      variant="outline"
+                      loading={suspending}
+                      onClick={async () => {
+                        setSuspending(true);
+                        setSuspendError(null);
+                        const result = await suspendUser(shelter.id, null);
+                        setSuspending(false);
+                        if (result.error) {
+                          setSuspendError(result.error);
+                        } else {
+                          setShelter({ ...shelter, suspended_until: null });
+                        }
+                      }}
+                    >
+                      Lift suspension
+                    </Button>
+                  )}
+                </Group>
               </Stack>
             )}
 

@@ -6,6 +6,7 @@ import { getMessages, sendMessage, Message } from '../api/message';
 import { getRenterMe } from '../api/renter';
 import { getShelterMe } from '../api/shelter';
 import { getAdminMe } from '../api/admin';
+import { getRenterProfile, getShelterProfile } from '../api/profile';
 
 const MessagingPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();

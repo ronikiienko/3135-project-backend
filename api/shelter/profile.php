@@ -31,7 +31,8 @@ json_response([
         'location'        => $shelter['location'],
         'description'     => $shelter['description'],
         'rating'          => $shelter['rating'],
-        'avatar_filename' => $shelter['avatar_filename'],
-        'profile_images'  => $shelter['profile_images'],
+        'avatar_filename'  => $shelter['avatar_filename'],
+        'profile_images'   => $shelter['profile_images'],
+        'suspended_until'  => $shelter['suspended_until'] ? format_datetime($shelter['suspended_until']) : null,
     ],
 ]);

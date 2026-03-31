@@ -11,6 +11,7 @@ export interface Listing {
   rate: number;
   created_at: string;
   shelter_name: string;
+  shelter_location: string;
   listing_images: string[];
 }
 
