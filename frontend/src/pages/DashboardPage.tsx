@@ -5,6 +5,7 @@ import Topbar from '../components/Topbar';
 import CreateListingModal from '../components/CreateListingModal';
 import { Listing, getListings } from '../api/listing';
 import { getShelterMe, Shelter } from '../api/shelter';
+import { getRenterMe, Renter } from '../api/renter';
 import { Rental, getRentals } from '../api/rental';
 import { getAdminMe, getAdminShelters, getAdminDisputes, verifyShelter, resolveDispute } from '../api/admin';
 import { LISTING_IMAGES_URL } from '../api/config';
@@ -139,6 +140,7 @@ const AdminDashboard: React.FC = () => {
 const ShelterDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
+  const [shelter, setShelter] = useState<Shelter | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [listingMap, setListingMap] = useState<Map<number, Listing>>(new Map());
@@ -147,6 +149,7 @@ const ShelterDashboard: React.FC = () => {
   useEffect(() => {
     getShelterMe().then(({ shelter }) => {
       if (!shelter) return;
+      setShelter(shelter);
       Promise.all([
         getListings(),
         getRentals(),
@@ -173,9 +176,16 @@ const ShelterDashboard: React.FC = () => {
   );
   const openListings = listings.filter((l) => !l.is_closed);
   const closedListings = listings.filter((l) => l.is_closed);
+  const isSuspended = shelter !== null && shelter.suspended_until !== null && new Date(shelter.suspended_until) > new Date();
 
   return (
     <Container my={40}>
+      {isSuspended && (
+        <Alert color="red" title="Account Suspended" mb="lg">
+          Your account is suspended until {new Date(shelter!.suspended_until!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.
+          {' '}You cannot create new listings, and your listings are hidden from renters. Active rentals are unaffected.
+        </Alert>
+      )}
       {loading ? <Loader /> : (
         <Stack gap="xl">
           {activeRentals.length > 0 && (
@@ -298,6 +308,7 @@ const ShelterDashboard: React.FC = () => {
 
 const RenterDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [renter, setRenter] = useState<Renter | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
@@ -308,10 +319,14 @@ const RenterDashboard: React.FC = () => {
   const activeStatuses = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'];
 
   useEffect(() => {
+    console.log('hello world');
     Promise.all([
+      getRenterMe(),
       getListings(),
       getRentals(),
-    ]).then(([listingsData, rentalsData]) => {
+    ]).then(([renterData, listingsData, rentalsData]) => {
+      console.log('renterData:', renterData);
+      if (renterData.renter) setRenter(renterData.renter);
       setListings((listingsData.listings ?? []).filter((l) => !l.is_closed));
       setRentals(rentalsData.rentals ?? []);
       setLoading(false);
@@ -330,9 +345,16 @@ const RenterDashboard: React.FC = () => {
     (l.shelter_location ?? '').toLowerCase().includes(filterLocation.toLowerCase()) &&
     l.description.toLowerCase().includes(filterDescription.toLowerCase()),
   );
+  const isSuspended = renter !== null && renter.suspended_until !== null && new Date(renter.suspended_until) > new Date();
 
   return (
     <Container my={40}>
+      {isSuspended && (
+        <Alert color="red" title="Account Suspended" mb="lg">
+          Your account is suspended until {new Date(renter!.suspended_until!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.
+          {' '}You cannot initiate new rental requests. Active rentals are unaffected.
+        </Alert>
+      )}
       {loading ? <Loader /> : (
         <Stack gap="xl">
           {activeRentals.length > 0 && (

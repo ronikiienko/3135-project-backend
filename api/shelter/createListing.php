@@ -11,7 +11,7 @@ $session = require_auth(['SHELTER']);
 $db      = get_db();
 
 $shelter = fetch_shelter($db, $session['user_id']);
-if (!$shelter['is_verified'] || $shelter['suspended_until'] !== null) {
+if (!$shelter['is_verified'] || ($shelter['suspended_until'] !== null && strtotime($shelter['suspended_until']) > time())) {
     error_response('FORBIDDEN', 403);
 }
 
