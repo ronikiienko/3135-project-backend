@@ -19,3 +19,13 @@ export async function getShelterMe(): Promise<{ shelter?: Shelter; error?: strin
   const res = await fetch(`${BASE_URL}/shelter/me.php`, { credentials: 'include' });
   return res.json();
 }
+
+export async function updateShelterProfile(name: string, location: string, description: string): Promise<{ shelter?: Shelter; error?: string }> {
+  const res = await fetch(`${BASE_URL}/shelter/updateProfile.php`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ name, location, description }),
+  });
+  return res.json();
+}

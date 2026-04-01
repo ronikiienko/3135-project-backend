@@ -16,6 +16,15 @@ export interface Renter {
 
 export async function getRenterMe(): Promise<{ renter?: Renter; error?: string }> {
   const res = await fetch(`${BASE_URL}/renter/me.php`, { credentials: 'include' });
+  return res.json();
+}
 
+export async function updateRenterProfile(fName: string, lName: string, location: string, description: string): Promise<{ renter?: Renter; error?: string }> {
+  const res = await fetch(`${BASE_URL}/renter/updateProfile.php`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ fName, lName, location, description }),
+  });
   return res.json();
 }
