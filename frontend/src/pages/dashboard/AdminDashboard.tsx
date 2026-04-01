@@ -83,6 +83,9 @@ const AdminDashboard: React.FC = () => {
                         </Stack>
                         <Group gap="sm">
                           <Badge color="orange">Dispute</Badge>
+                          <Button size="xs" variant="outline" onClick={() => navigate(`/admin/dispute/${d.id}/chat`)}>
+                            View Chat
+                          </Button>
                           <Button size="xs" color="blue" variant="outline" loading={resolving === d.id} onClick={() => handleResolve(d.id, 'IN_FAVOR_OF_SHELTER')}>
                             Shelter wins
                           </Button>

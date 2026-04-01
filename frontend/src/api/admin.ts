@@ -78,3 +78,8 @@ export async function resolveDispute(rentalId: number, resolution: 'IN_FAVOR_OF_
   });
   return res.json();
 }
+
+export async function getDisputeMessages(rentalId: number): Promise<{ messages?: import('./message').Message[]; renter_id?: number; shelter_id?: number; error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/disputeMessages.php?rentalId=${rentalId}`, { credentials: 'include' });
+  return res.json();
+}
