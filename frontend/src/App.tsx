@@ -20,6 +20,8 @@ import HelpPage from './pages/HelpPage';
 import MessagingPage from './pages/MessagingPage';
 import ConversationsPage from './pages/ConversationsPage';
 import AdminDisputeChatPage from './pages/AdminDisputeChatPage';
+import AdminReportsPage from './pages/AdminReportsPage';
+import AdminReportChatPage from './pages/AdminReportChatPage';
 
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
   const role = localStorage.getItem('role');
@@ -63,6 +65,8 @@ const App: React.FC = () => {
           <Route path="/messages" element={<PrivateRoute element={<ConversationsPage />} />} />
           <Route path="/messages/:userId" element={<PrivateRoute element={<MessagingPage />} />} />
           <Route path="/admin/dispute/:rentalId/chat" element={<PrivateRoute element={<AdminDisputeChatPage />} />} />
+          <Route path="/admin/reports" element={<PrivateRoute element={<AdminReportsPage />} />} />
+          <Route path="/admin/report/:reportId/chat" element={<PrivateRoute element={<AdminReportChatPage />} />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

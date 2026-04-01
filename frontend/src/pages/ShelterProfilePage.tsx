@@ -11,6 +11,7 @@ import { statusLabel, statusColor } from '../utils/rentalStatus';
 import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
 import { suspendUser } from '../api/admin';
 import { useRole } from '../hooks/useRole';
+import ReportModal from '../components/ReportModal';
 
 const ShelterProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ const ShelterProfilePage: React.FC = () => {
   const [suspendUntil, setSuspendUntil] = useState<Date | null>(null);
   const [suspending, setSuspending] = useState(false);
   const [suspendError, setSuspendError] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const role = useRole();
 
   useEffect(() => {
@@ -67,7 +69,10 @@ const ShelterProfilePage: React.FC = () => {
                       : <Badge color="gray">Not verified</Badge>
                     }
                   </Group>
-                  <Button size="xs" variant="outline" onClick={() => navigate(`/messages/${shelter.id}`, { state: { correspondentName: shelter.name } })}>Message</Button>
+                  <Group gap="xs">
+                    <Button size="xs" variant="outline" onClick={() => navigate(`/messages/${shelter.id}`, { state: { correspondentName: shelter.name } })}>Message</Button>
+                    {role === 'RENTER' && <Button size="xs" color="red" variant="outline" onClick={() => setReportOpen(true)}>Report</Button>}
+                  </Group>
                   {shelter.rating !== null && (
                     <Text size="sm" c="dimmed">Rating: {(shelter.rating * 5).toFixed(1)} / 5</Text>
                   )}
@@ -195,6 +200,7 @@ const ShelterProfilePage: React.FC = () => {
           </Paper>
         )}
       </Container>
+      {shelter && <ReportModal opened={reportOpen} onClose={() => setReportOpen(false)} reportedId={shelter.id} reportedName={shelter.name} />}
     </>
   );
 };

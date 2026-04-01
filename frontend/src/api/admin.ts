@@ -79,6 +79,35 @@ export async function resolveDispute(rentalId: number, resolution: 'IN_FAVOR_OF_
   return res.json();
 }
 
+export interface Report {
+  id: number;
+  reporter_id: number | null;
+  reported_id: number;
+  reporter_name: string;
+  reported_name: string;
+  reason: string;
+  body: string;
+  is_resolved: boolean;
+}
+
+export async function getAdminReports(): Promise<{ reports?: Report[]; error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/reports.php`, { credentials: 'include' });
+  return res.json();
+}
+
+export async function resolveReport(reportId: number): Promise<{ error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/resolveReport.php?reportId=${reportId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function getReportMessages(reportId: number): Promise<{ messages?: import('./message').Message[]; reporter_id?: number | null; reported_id?: number; error?: string }> {
+  const res = await fetch(`${BASE_URL}/admin/reportMessages.php?reportId=${reportId}`, { credentials: 'include' });
+  return res.json();
+}
+
 export async function getDisputeMessages(rentalId: number): Promise<{ messages?: import('./message').Message[]; renter_id?: number; shelter_id?: number; error?: string }> {
   const res = await fetch(`${BASE_URL}/admin/disputeMessages.php?rentalId=${rentalId}`, { credentials: 'include' });
   return res.json();

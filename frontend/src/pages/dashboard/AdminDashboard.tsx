@@ -114,6 +114,10 @@ const AdminDashboard: React.FC = () => {
               <Text fw={600}>Disputes</Text>
               <Text size="sm" c="dimmed">Claim and resolve open rental disputes</Text>
             </Card>
+            <Card withBorder shadow="sm" radius="md" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/reports')}>
+              <Text fw={600}>Reports</Text>
+              <Text size="sm" c="dimmed">Review and resolve user reports</Text>
+            </Card>
           </SimpleGrid>
         </Stack>
       </Stack>
