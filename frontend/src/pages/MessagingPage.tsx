@@ -7,12 +7,13 @@ import { getRenterMe } from '../api/renter';
 import { getShelterMe } from '../api/shelter';
 import { getAdminMe } from '../api/admin';
 import { getRenterProfile, getShelterProfile } from '../api/profile';
+import { useRole } from '../hooks/useRole';
 
 const MessagingPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
   const location = useLocation();
   const correspondentName = (location.state as any)?.correspondentName ?? 'Unknown';
-  const role = localStorage.getItem('role');
+  const role = useRole();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);

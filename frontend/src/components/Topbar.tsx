@@ -3,6 +3,7 @@ import { Group, Avatar, Text, Box, Menu, Badge } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { getRenterMe } from '../api/renter';
 import { getShelterMe } from '../api/shelter';
+import { useRole } from '../hooks/useRole';
 import { getAdminMe } from '../api/admin';
 import { logout } from '../api/auth';
 import { AVATARS_URL } from '../api/config';
@@ -12,7 +13,7 @@ type UserInfo = { name: string; avatarFilename: string | null; isVerified?: bool
 const Topbar: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const navigate = useNavigate();
-  const role = localStorage.getItem('role');
+  const role = useRole();
 
   useEffect(() => {
     if (role === 'SHELTER') {

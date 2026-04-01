@@ -3,16 +3,12 @@ import { Container, Title, Stack, Card, Group, Text, Badge, Loader, Alert } from
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import { getRentals, Rental } from '../api/rental';
-import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
-
-const closedStatuses = [
-  'SHELTER_DECLINED', 'PAYMENT_EXPIRED', 'RENTER_DECLINED', 'SHELTER_WITHDREW',
-  'PEACEFULLY_TERMINATED', 'DISPUTE_IN_FAVOR_OF_SHELTER', 'DISPUTE_IN_FAVOR_OF_RENTER', 'SHELTER_CANCELLED', 'RENTER_CANCELLED',
-];
+import { ACTIVE_STATUSES, statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
+import { useRole } from '../hooks/useRole';
 
 const RentalHistoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const role = localStorage.getItem('role');
+  const role = useRole();
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +18,7 @@ const RentalHistoryPage: React.FC = () => {
   useEffect(() => {
     getRentals().then((data) => {
       if (data.error) setError('Failed to load rental history.');
-      else setRentals((data.rentals ?? []).filter((r) => closedStatuses.includes(r.status)));
+      else setRentals((data.rentals ?? []).filter((r) => !ACTIVE_STATUSES.includes(r.status as typeof ACTIVE_STATUSES[number])));
       setLoading(false);
     });
   }, []);

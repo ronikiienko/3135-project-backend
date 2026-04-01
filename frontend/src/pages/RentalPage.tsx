@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button, Modal, Textarea, Rating,
+  Container, Title, Text, Stack, Group, Badge, Loader, Alert, Paper, Button,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import 'dayjs/locale/en';
 import Topbar from '../components/Topbar';
-import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, payForRental, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental, createReview, getReviews } from '../api/rental';
+import ConfirmModal from '../components/ConfirmModal';
+import DisputeModal from './rental/DisputeModal';
+import DisputeSection from './rental/DisputeSection';
+import ReviewSection from './rental/ReviewSection';
+import { Rental, getRental, respondToRentalRequest, respondToRentalTerms, payForRental, withdrawFromRental, cancelRental, cancelRentalRequest, disputeRental } from '../api/rental';
 import { statusColor, statusLabel, statusDescriptionRenter, statusDescriptionShelter } from '../utils/rentalStatus';
+import { useRole } from '../hooks/useRole';
+
+type ActiveModal = 'cancel' | 'cancelRequest' | 'deny' | 'withdraw' | 'declineTerms' | 'dispute' | null;
 
 const RentalPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const role = localStorage.getItem('role');
+  const role = useRole();
 
   const [rental, setRental] = useState<Rental | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,23 +27,11 @@ const RentalPage: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showCancelRequestModal, setShowCancelRequestModal] = useState(false);
-  const [showDenyModal, setShowDenyModal] = useState(false);
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [showDeclineTermsModal, setShowDeclineTermsModal] = useState(false);
-  const [showDisputeModal, setShowDisputeModal] = useState(false);
-  const [disputeReason, setDisputeReason] = useState('');
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
-  const [reviewBody, setReviewBody] = useState('');
-  const [reviewScore, setReviewScore] = useState(0);
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [reviewError, setReviewError] = useState<string | null>(null);
-
-  // Shelter confirm form state
   const [showConfirmForm, setShowConfirmForm] = useState(false);
-  const [suggestedBegins, setSuggestedBegins] = useState<string | null>(null);
-  const [suggestedEnds, setSuggestedEnds] = useState<string | null>(null);
+  const [suggestedBegins, setSuggestedBegins] = useState<Date | null>(null);
+  const [suggestedEnds, setSuggestedEnds] = useState<Date | null>(null);
 
   const fetchRental = () => {
     if (!id) return;
@@ -44,22 +39,9 @@ const RentalPage: React.FC = () => {
     getRental(Number(id)).then((data) => {
       if (data.error) {
         setError('Rental not found or access denied.');
-        setLoading(false);
-        return;
+      } else {
+        setRental(data.rental!);
       }
-      const fetchedRental = data.rental!;
-      setRental(fetchedRental);
-
-      // Check if current user already reviewed this rental
-      if (role === 'RENTER' || role === 'SHELTER') {
-        const reviewedId = role === 'RENTER' ? fetchedRental.shelter_id : fetchedRental.renter_id;
-        getReviews(reviewedId).then((reviewsData) => {
-          if (reviewsData.reviews?.some((r) => r.rental_id === fetchedRental.id)) {
-            setReviewSubmitted(true);
-          }
-        });
-      }
-
       setLoading(false);
     });
   };
@@ -74,8 +56,8 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await respondToRentalRequest(rental.id, {
       response: 'CONFIRM',
-      suggestedRentalBegins: new Date(suggestedBegins).toISOString(),
-      suggestedRentalEnds: new Date(suggestedEnds).toISOString(),
+      suggestedRentalBegins: suggestedBegins.toISOString(),
+      suggestedRentalEnds: suggestedEnds.toISOString(),
     });
     setActionLoading(false);
     if (result.error) {
@@ -94,11 +76,8 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await respondToRentalRequest(rental.id, { response: 'DENY' });
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
-    } else {
-      fetchRental();
-    }
+    if (result.error) setActionError(result.error);
+    else fetchRental();
   };
 
   const handleRenterAccept = async () => {
@@ -120,11 +99,8 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await respondToRentalTerms(rental.id, { response: 'DECLINE' });
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
-    } else {
-      fetchRental();
-    }
+    if (result.error) setActionError(result.error);
+    else fetchRental();
   };
 
   const handleShelterWithdraw = async () => {
@@ -133,25 +109,18 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await withdrawFromRental(rental.id);
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
-    } else {
-      fetchRental();
-    }
+    if (result.error) setActionError(result.error);
+    else fetchRental();
   };
 
-  const handleDisputeRental = async () => {
+  const handleDisputeRental = async (reason: string) => {
     if (!rental) return;
     setActionLoading(true);
     setActionError(null);
-    const result = await disputeRental(rental.id, disputeReason);
+    const result = await disputeRental(rental.id, reason);
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
-    } else {
-      setDisputeReason('');
-      fetchRental();
-    }
+    if (result.error) setActionError(result.error);
+    else fetchRental();
   };
 
   const handleRenterCancelRequest = async () => {
@@ -160,11 +129,8 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await cancelRentalRequest(rental.id);
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
-    } else {
-      fetchRental();
-    }
+    if (result.error) setActionError(result.error);
+    else fetchRental();
   };
 
   const handleShelterCancel = async () => {
@@ -173,12 +139,11 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await cancelRental(rental.id);
     setActionLoading(false);
-    if (result.error) {
-      setActionError(result.error);
-    } else {
-      fetchRental();
-    }
+    if (result.error) setActionError(result.error);
+    else fetchRental();
   };
+
+  const closeModal = () => setActiveModal(null);
 
   if (loading) return (
     <>
@@ -298,7 +263,7 @@ const RentalPage: React.FC = () => {
                     <Button color="green" onClick={() => setShowConfirmForm(true)} loading={actionLoading}>
                       Accept
                     </Button>
-                    <Button color="red" variant="outline" onClick={() => setShowDenyModal(true)} loading={actionLoading}>
+                    <Button color="red" variant="outline" onClick={() => setActiveModal('deny')} loading={actionLoading}>
                       Decline
                     </Button>
                   </Group>
@@ -319,7 +284,7 @@ const RentalPage: React.FC = () => {
                       placeholder="Pick date and time"
                       value={suggestedEnds}
                       onChange={setSuggestedEnds}
-                      minDate={suggestedBegins ? new Date(suggestedBegins) : new Date()}
+                      minDate={suggestedBegins ?? new Date()}
                     />
                     <Group>
                       <Button color="green" onClick={handleShelterConfirm} loading={actionLoading}>
@@ -342,7 +307,7 @@ const RentalPage: React.FC = () => {
                 Changed your mind? <strong>Withdraw</strong> to cancel the proposed terms. The renter will be notified and no payment will be taken.
               </Text>
               <Group>
-                <Button color="red" variant="outline" onClick={() => setShowWithdrawModal(true)} loading={actionLoading}>
+                <Button color="red" variant="outline" onClick={() => setActiveModal('withdraw')} loading={actionLoading}>
                   Withdraw
                 </Button>
               </Group>
@@ -356,40 +321,12 @@ const RentalPage: React.FC = () => {
                 If you cancel this rental, the full payment of ${rental.total_cost?.toFixed(2)} will be returned to the renter. This cannot be undone.
               </Alert>
               <Group>
-                <Button color="red" variant="outline" onClick={() => setShowCancelModal(true)} loading={actionLoading}>
+                <Button color="red" variant="outline" onClick={() => setActiveModal('cancel')} loading={actionLoading}>
                   Cancel Rental
                 </Button>
               </Group>
             </Stack>
           )}
-
-          <Modal
-            opened={showCancelModal}
-            onClose={() => setShowCancelModal(false)}
-            title="Cancel this rental?"
-            centered
-          >
-            <Stack gap="md">
-              <Text>
-                This will cancel the rental and refund <strong>${rental.total_cost?.toFixed(2)}</strong> to the renter. This action cannot be undone.
-              </Text>
-              <Group justify="flex-end">
-                <Button variant="outline" onClick={() => setShowCancelModal(false)} disabled={actionLoading}>
-                  Go back
-                </Button>
-                <Button
-                  color="red"
-                  loading={actionLoading}
-                  onClick={async () => {
-                    await handleShelterCancel();
-                    setShowCancelModal(false);
-                  }}
-                >
-                  Yes, cancel rental
-                </Button>
-              </Group>
-            </Stack>
-          </Modal>
 
           {/* Renter cancel for REQUESTED status */}
           {role === 'RENTER' && rental.status === 'REQUESTED' && (
@@ -398,38 +335,12 @@ const RentalPage: React.FC = () => {
                 Your request is waiting for the shelter to respond. You can cancel it at any time before they accept or decline — no payment will be taken.
               </Text>
               <Group>
-                <Button color="red" variant="outline" onClick={() => setShowCancelRequestModal(true)} loading={actionLoading}>
+                <Button color="red" variant="outline" onClick={() => setActiveModal('cancelRequest')} loading={actionLoading}>
                   Cancel Request
                 </Button>
               </Group>
             </Stack>
           )}
-
-          <Modal
-            opened={showCancelRequestModal}
-            onClose={() => setShowCancelRequestModal(false)}
-            title="Cancel this request?"
-            centered
-          >
-            <Stack gap="md">
-              <Text>Your request will be withdrawn. No payment will be taken. This cannot be undone.</Text>
-              <Group justify="flex-end">
-                <Button variant="outline" onClick={() => setShowCancelRequestModal(false)} disabled={actionLoading}>
-                  Go back
-                </Button>
-                <Button
-                  color="red"
-                  loading={actionLoading}
-                  onClick={async () => {
-                    await handleRenterCancelRequest();
-                    setShowCancelRequestModal(false);
-                  }}
-                >
-                  Yes, cancel request
-                </Button>
-              </Group>
-            </Stack>
-          </Modal>
 
           {/* Renter actions for PAYMENT_PENDING status */}
           {role === 'RENTER' && rental.status === 'PAYMENT_PENDING' && (
@@ -466,7 +377,7 @@ const RentalPage: React.FC = () => {
                   <Button color="green" onClick={handleRenterAccept} loading={actionLoading}>
                     Pay Now
                   </Button>
-                  <Button color="red" variant="outline" onClick={() => setShowDeclineTermsModal(true)} loading={actionLoading}>
+                  <Button color="red" variant="outline" onClick={() => setActiveModal('declineTerms')} loading={actionLoading}>
                     Decline Terms
                   </Button>
                 </Group>
@@ -475,157 +386,74 @@ const RentalPage: React.FC = () => {
           )}
 
           {/* Renter dispute for PAID status */}
-          {role === 'RENTER' && rental.status === 'PAID' && (() => {
-            const now = Date.now();
-            const endsTs = rental.rental_ends ? new Date(rental.rental_ends).getTime() : null;
-            const rentalEnded = endsTs !== null && endsTs <= now;
-            const windowExpired = endsTs !== null && (now - endsTs) > 24 * 60 * 60 * 1000;
-            const canDispute = rentalEnded && !windowExpired;
+          {role === 'RENTER' && rental.status === 'PAID' && (
+            <DisputeSection
+              rental={rental}
+              actionLoading={actionLoading}
+              onOpenModal={() => setActiveModal('dispute')}
+            />
+          )}
 
-            let disabledReason: string | null = null;
-            if (!rentalEnded) disabledReason = 'You can only raise a dispute after the rental has ended.';
-            else if (windowExpired) disabledReason = 'The 24-hour dispute window has passed.';
-
-            return (
-              <Stack gap="xs">
-                <Text size="sm" c="dimmed">
-                  If something went wrong during the rental, you can raise a <strong>dispute</strong> within 24 hours after the rental ends.
-                  Once raised, the shelter's payout is put on hold while an admin reviews the case.
-                </Text>
-                {canDispute && (
-                  <Text size="sm" c="orange.7">
-                    Only raise a dispute if you have a genuine issue. An admin will review the reason you provide and decide the outcome.
-                  </Text>
-                )}
-                {disabledReason && <Text size="sm" c="dimmed">{disabledReason}</Text>}
-                <Group>
-                  <Button color="orange" variant="outline" onClick={() => setShowDisputeModal(true)} loading={actionLoading} disabled={!canDispute}>
-                    Raise Dispute
-                  </Button>
-                </Group>
-              </Stack>
-            );
-          })()}
-          {/* Review section */}
-          {(() => {
-            const renterQualifying = ['PEACEFULLY_TERMINATED', 'DISPUTE_IN_FAVOR_OF_SHELTER', 'DISPUTE_IN_FAVOR_OF_RENTER', 'SHELTER_CANCELLED'];
-            const shelterQualifying = ['PEACEFULLY_TERMINATED', 'DISPUTE_IN_FAVOR_OF_SHELTER', 'DISPUTE_IN_FAVOR_OF_RENTER', 'PAYMENT_EXPIRED'];
-            const canReview = (role === 'RENTER' && renterQualifying.includes(rental.status)) ||
-                              (role === 'SHELTER' && shelterQualifying.includes(rental.status));
-            if (!canReview) return null;
-
-            const reviewedId = role === 'RENTER' ? rental.shelter_id : rental.renter_id;
-
-            const handleSubmitReview = async () => {
-              if (!reviewBody.trim() || reviewScore === 0) return;
-              setActionLoading(true);
-              setReviewError(null);
-              const result = await createReview(rental.id, reviewedId, reviewBody, reviewScore / 5);
-              setActionLoading(false);
-              if (result.error === 'ALREADY_REVIEWED') {
-                setReviewError('You have already left a review for this rental.');
-              } else if (result.error) {
-                setReviewError('Failed to submit review.');
-              } else {
-                setReviewSubmitted(true);
-              }
-            };
-
-            return (
-              <Paper withBorder p="md" radius="md">
-                <Stack gap="sm">
-                  <Title order={5}>Leave a Review</Title>
-                  {reviewSubmitted ? (
-                    <Text size="sm" c="green">Review submitted. Thank you!</Text>
-                  ) : (
-                    <>
-                      {reviewError && <Alert color="red">{reviewError}</Alert>}
-                      <Rating value={reviewScore} onChange={setReviewScore} />
-                      <Textarea
-                        placeholder="Share your experience..."
-                        value={reviewBody}
-                        onChange={(e) => setReviewBody(e.currentTarget.value)}
-                        minRows={3}
-                      />
-                      <Group>
-                        <Button size="sm" onClick={handleSubmitReview} loading={actionLoading} disabled={!reviewBody.trim() || reviewScore === 0}>
-                          Submit Review
-                        </Button>
-                      </Group>
-                    </>
-                  )}
-                </Stack>
-              </Paper>
-            );
-          })()}
+          <ReviewSection rental={rental} role={role} />
         </Stack>}
       </Container>
 
-      <Modal opened={showDisputeModal} onClose={() => { setShowDisputeModal(false); setDisputeReason(''); }} title="Raise a dispute" centered>
-        <Stack gap="md">
-          <Text size="sm">Describe what went wrong. An admin will review this and decide the outcome. Your payment is on hold until resolved.</Text>
-          <Textarea
-            label="Reason"
-            placeholder="Explain the issue in detail..."
-            value={disputeReason}
-            onChange={(e) => setDisputeReason(e.currentTarget.value)}
-            minRows={4}
-            required
-          />
-          <Group justify="flex-end">
-            <Button variant="outline" onClick={() => { setShowDisputeModal(false); setDisputeReason(''); }} disabled={actionLoading}>
-              Go back
-            </Button>
-            <Button
-              color="orange"
-              loading={actionLoading}
-              disabled={!disputeReason.trim()}
-              onClick={async () => {
-                await handleDisputeRental();
-                setShowDisputeModal(false);
-              }}
-            >
-              Submit dispute
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <ConfirmModal
+        opened={activeModal === 'cancel'}
+        onClose={closeModal}
+        title="Cancel this rental?"
+        message={<>This will cancel the rental and refund <strong>${rental?.total_cost?.toFixed(2)}</strong> to the renter. This action cannot be undone.</>}
+        confirmLabel="Yes, cancel rental"
+        loading={actionLoading}
+        onConfirm={async () => { await handleShelterCancel(); closeModal(); }}
+      />
 
-      <Modal opened={showDenyModal} onClose={() => setShowDenyModal(false)} title="Decline this request?" centered>
-        <Stack gap="md">
-          <Text>The renter's request will be declined. This cannot be undone.</Text>
-          <Group justify="flex-end">
-            <Button variant="outline" onClick={() => setShowDenyModal(false)} disabled={actionLoading}>Go back</Button>
-            <Button color="red" loading={actionLoading} onClick={async () => { await handleShelterDeny(); setShowDenyModal(false); }}>
-              Yes, decline
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <ConfirmModal
+        opened={activeModal === 'cancelRequest'}
+        onClose={closeModal}
+        title="Cancel this request?"
+        message="Your request will be withdrawn. No payment will be taken. This cannot be undone."
+        confirmLabel="Yes, cancel request"
+        loading={actionLoading}
+        onConfirm={async () => { await handleRenterCancelRequest(); closeModal(); }}
+      />
 
-      <Modal opened={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} title="Withdraw proposed terms?" centered>
-        <Stack gap="md">
-          <Text>Your proposed terms will be withdrawn. The renter will not be charged. This cannot be undone.</Text>
-          <Group justify="flex-end">
-            <Button variant="outline" onClick={() => setShowWithdrawModal(false)} disabled={actionLoading}>Go back</Button>
-            <Button color="red" loading={actionLoading} onClick={async () => { await handleShelterWithdraw(); setShowWithdrawModal(false); }}>
-              Yes, withdraw
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <ConfirmModal
+        opened={activeModal === 'deny'}
+        onClose={closeModal}
+        title="Decline this request?"
+        message="The renter's request will be declined. This cannot be undone."
+        confirmLabel="Yes, decline"
+        loading={actionLoading}
+        onConfirm={async () => { await handleShelterDeny(); closeModal(); }}
+      />
 
-      <Modal opened={showDeclineTermsModal} onClose={() => setShowDeclineTermsModal(false)} title="Decline these terms?" centered>
-        <Stack gap="md">
-          <Text>You will decline the shelter's proposed terms. No payment will be taken. This cannot be undone.</Text>
-          <Group justify="flex-end">
-            <Button variant="outline" onClick={() => setShowDeclineTermsModal(false)} disabled={actionLoading}>Go back</Button>
-            <Button color="red" loading={actionLoading} onClick={async () => { await handleRenterDecline(); setShowDeclineTermsModal(false); }}>
-              Yes, decline terms
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <ConfirmModal
+        opened={activeModal === 'withdraw'}
+        onClose={closeModal}
+        title="Withdraw proposed terms?"
+        message="Your proposed terms will be withdrawn. The renter will not be charged. This cannot be undone."
+        confirmLabel="Yes, withdraw"
+        loading={actionLoading}
+        onConfirm={async () => { await handleShelterWithdraw(); closeModal(); }}
+      />
+
+      <ConfirmModal
+        opened={activeModal === 'declineTerms'}
+        onClose={closeModal}
+        title="Decline these terms?"
+        message="You will decline the shelter's proposed terms. No payment will be taken. This cannot be undone."
+        confirmLabel="Yes, decline terms"
+        loading={actionLoading}
+        onConfirm={async () => { await handleRenterDecline(); closeModal(); }}
+      />
+
+      <DisputeModal
+        opened={activeModal === 'dispute'}
+        onClose={closeModal}
+        loading={actionLoading}
+        onSubmit={handleDisputeRental}
+      />
     </>
   );
 };

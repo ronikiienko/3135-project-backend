@@ -10,6 +10,7 @@ import { getReviews, Review } from '../api/rental';
 import { statusLabel, statusColor } from '../utils/rentalStatus';
 import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
 import { suspendUser } from '../api/admin';
+import { useRole } from '../hooks/useRole';
 
 const ShelterProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ const ShelterProfilePage: React.FC = () => {
   const [suspendUntil, setSuspendUntil] = useState<Date | null>(null);
   const [suspending, setSuspending] = useState(false);
   const [suspendError, setSuspendError] = useState<string | null>(null);
-  const role = localStorage.getItem('role');
+  const role = useRole();
 
   useEffect(() => {
     if (!id) return;

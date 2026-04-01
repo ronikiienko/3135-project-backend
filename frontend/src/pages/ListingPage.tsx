@@ -6,11 +6,12 @@ import Topbar from '../components/Topbar';
 import { getListing, Listing, closeListing } from '../api/listing';
 import { initiateRental } from '../api/rental';
 import { LISTING_IMAGES_URL } from '../api/config';
+import { useRole } from '../hooks/useRole';
 
 const ListingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const role = localStorage.getItem('role');
+  const role = useRole();
   const [listing, setListing] = useState<Listing | null>(null);
   const [shelter, setShelter] = useState<ShelterPublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);

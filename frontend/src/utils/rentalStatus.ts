@@ -1,3 +1,5 @@
+export const ACTIVE_STATUSES = ['REQUESTED', 'PAYMENT_PENDING', 'PAID', 'DISPUTE'] as const;
+
 export const statusColor: Record<string, string> = {
   REQUESTED: 'yellow',
   SHELTER_DECLINED: 'red',
