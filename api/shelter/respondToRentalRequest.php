@@ -56,7 +56,7 @@ if ($response === 'CONFIRM') {
     $endsTs   = strtotime($ends);
 
     if ($beginsTs === false || $endsTs === false || $beginsTs <= time() || $endsTs <= $beginsTs) {
-        error_response('PAYLOAD_MALFORMED', 400);
+        error_response('INVALID_DATES', 422);
     }
 
     // Fetch rate from listings table

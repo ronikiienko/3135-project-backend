@@ -44,8 +44,12 @@ if ($checkoutSession->payment_status !== 'paid' || $rental['status'] !== 'PAYMEN
     exit;
 }
 
-$stmt = $db->prepare('UPDATE rentals SET status = "PAID" WHERE id = :id AND status = "PAYMENT_PENDING"');
-$stmt->execute([':id' => $rental['id']]);
+$paymentIntentId = is_string($checkoutSession->payment_intent)
+    ? $checkoutSession->payment_intent
+    : $checkoutSession->payment_intent->id;
+
+$stmt = $db->prepare('UPDATE rentals SET status = "PAID", stripe_payment_intent_id = :pi WHERE id = :id AND status = "PAYMENT_PENDING"');
+$stmt->execute([':pi' => $paymentIntentId, ':id' => $rental['id']]);
 
 header('Location: ' . $rentalUrl);
 exit;

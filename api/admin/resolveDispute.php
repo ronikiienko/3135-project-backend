@@ -20,7 +20,12 @@ if (!$rentalId) {
     error_response('PAYLOAD_MALFORMED', 400);
 }
 
-$stmt = $db->prepare('SELECT id, status, assigned_admin_id FROM rentals WHERE id = :id');
+$stmt = $db->prepare('
+    SELECT r.id, r.status, r.assigned_admin_id, r.stripe_payment_intent_id, s.stripe_account_id
+    FROM rentals r
+    JOIN shelters s ON s.id = r.shelter_id
+    WHERE r.id = :id
+');
 $stmt->execute([':id' => $rentalId]);
 $rental = $stmt->fetch();
 
@@ -45,5 +50,24 @@ $newStatus = $body['resolution'] === 'IN_FAVOR_OF_SHELTER'
 
 $stmt = $db->prepare('UPDATE rentals SET status = :status, closed_at = NOW() WHERE id = :id');
 $stmt->execute([':status' => $newStatus, ':id' => $rentalId]);
+
+if ($rental['stripe_payment_intent_id']) {
+    try {
+        \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+        if ($body['resolution'] === 'IN_FAVOR_OF_RENTER') {
+            \Stripe\Refund::create(['payment_intent' => $rental['stripe_payment_intent_id']]);
+        } elseif ($body['resolution'] === 'IN_FAVOR_OF_SHELTER' && $rental['stripe_account_id']) {
+            $intent = \Stripe\PaymentIntent::retrieve($rental['stripe_payment_intent_id']);
+            \Stripe\Transfer::create([
+                'amount'             => $intent->amount_received,
+                'currency'           => $intent->currency,
+                'destination'        => $rental['stripe_account_id'],
+                'source_transaction' => $intent->latest_charge,
+            ]);
+        }
+    } catch (\Stripe\Exception\ApiErrorException $e) {
+        error_log('Stripe payout failed for rental ' . $rentalId . ': ' . $e->getMessage());
+    }
+}
 
 json_response([]);

@@ -5,7 +5,7 @@ CREATE TABLE users
     email           varchar(255) NOT NULL,
     password_hash   varchar(255) NOT NULL,
     avatar_filename varchar(255),
-    is_deleted      boolean      DEFAULT false
+    is_deleted      boolean DEFAULT false
 ) COLLATE utf8mb4_general_ci;
 
 CREATE TABLE user_images
@@ -18,14 +18,16 @@ CREATE TABLE user_images
 
 CREATE TABLE shelters
 (
-    id              int AUTO_INCREMENT,
+    id                int AUTO_INCREMENT,
     PRIMARY KEY (id),
-    name            varchar(255) NOT NULL,
-    is_verified     boolean      DEFAULT false,
-    location        varchar(255) NOT NULL,
-    description     text         NOT NULL,
-    rating          decimal(3, 2),
-    suspended_until datetime,
+    name              varchar(255) NOT NULL,
+    is_verified       boolean      DEFAULT false,
+    location          varchar(255) NOT NULL,
+    description       text         NOT NULL,
+    rating            decimal(3, 2),
+    suspended_until   datetime,
+    assigned_admin_id int,
+    stripe_account_id varchar(255),
     FOREIGN KEY (id) REFERENCES users (id)
 );
 
@@ -47,9 +49,12 @@ CREATE TABLE admins
     id                int AUTO_INCREMENT,
     PRIMARY KEY (id),
     name              varchar(255) NOT NULL,
-    can_create_admins boolean      DEFAULT false,
+    can_create_admins boolean DEFAULT false,
     FOREIGN KEY (id) REFERENCES users (id)
 );
+
+ALTER TABLE shelters
+    ADD CONSTRAINT FOREIGN KEY (assigned_admin_id) REFERENCES admins (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
 CREATE TABLE admin_tokens
 (
@@ -62,15 +67,15 @@ CREATE TABLE listings
 (
     id          int AUTO_INCREMENT,
     PRIMARY KEY (id),
-    shelter_id  int           NOT NULL,
+    shelter_id  int            NOT NULL,
     FOREIGN KEY (shelter_id) REFERENCES shelters (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    name        varchar(100)  NOT NULL,
-    species     varchar(100)  NOT NULL,
-    age         tinyint       NOT NULL,
-    description text          NOT NULL,
-    is_closed   boolean       DEFAULT false,
+    name        varchar(100)   NOT NULL,
+    species     varchar(100)   NOT NULL,
+    age         tinyint        NOT NULL,
+    description text           NOT NULL,
+    is_closed   boolean        DEFAULT false,
     rate        decimal(10, 2) NOT NULL,
-    created_at  timestamp     DEFAULT CURRENT_TIMESTAMP
+    created_at  timestamp      DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE listing_images
@@ -83,20 +88,20 @@ CREATE TABLE listing_images
 
 CREATE TABLE rentals
 (
-    id                    int AUTO_INCREMENT,
+    id                       int AUTO_INCREMENT,
     PRIMARY KEY (id),
-    shelter_id            int NOT NULL,
+    shelter_id               int NOT NULL,
     FOREIGN KEY (shelter_id) REFERENCES shelters (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    renter_id             int NOT NULL,
+    renter_id                int NOT NULL,
     FOREIGN KEY (renter_id) REFERENCES renters (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    listing_id            int NOT NULL,
+    listing_id               int NOT NULL,
     FOREIGN KEY (listing_id) REFERENCES listings (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    assigned_admin_id     int,
+    assigned_admin_id        int,
     FOREIGN KEY (assigned_admin_id) REFERENCES admins (id) ON UPDATE CASCADE ON DELETE SET NULL,
-    rental_begins         datetime,
-    rental_ends           datetime,
-    terms_proposed_at     datetime,
-    status                enum (
+    rental_begins            datetime,
+    rental_ends              datetime,
+    terms_proposed_at        datetime,
+    status                   enum (
         'REQUESTED',
         'SHELTER_DECLINED',
         'PAYMENT_PENDING',
@@ -110,11 +115,12 @@ CREATE TABLE rentals
         'DISPUTE_IN_FAVOR_OF_RENTER',
         'SHELTER_CANCELLED',
         'RENTER_CANCELLED'
-    )                     NOT NULL,
-    dispute_reason        text,
-    total_cost            decimal(10, 2),
-    stripe_transaction_id varchar(255),
-    closed_at             datetime
+    )                        NOT NULL,
+    dispute_reason           text,
+    total_cost               decimal(10, 2),
+    stripe_transaction_id    varchar(255),
+    stripe_payment_intent_id varchar(255),
+    closed_at                datetime
 );
 
 CREATE TABLE reports
@@ -123,11 +129,11 @@ CREATE TABLE reports
     PRIMARY KEY (id),
     reporter_id int,
     FOREIGN KEY (reporter_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
-    reported_id int NOT NULL,
-    FOREIGN KEY (reported_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    reported_id int          NOT NULL,
+    FOREIGN KEY (reported_id) REFERENCES users (id) ON UPDATE CASCADE,
     body        text         NOT NULL,
     reason      varchar(255) NOT NULL,
-    is_resolved boolean      DEFAULT false
+    is_resolved boolean DEFAULT false
 );
 
 CREATE TABLE messages
@@ -135,7 +141,7 @@ CREATE TABLE messages
     id           int AUTO_INCREMENT,
     PRIMARY KEY (id),
     sender_id    int NOT NULL,
-    FOREIGN KEY (sender_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (sender_id) REFERENCES users (id) ON UPDATE CASCADE,
     recipient_id int,
     FOREIGN KEY (recipient_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
     created_at   timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -148,8 +154,12 @@ CREATE TABLE reviews
     PRIMARY KEY (id),
     reviewer_id int,
     FOREIGN KEY (reviewer_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL,
-    reviewed_id int NOT NULL,
-    FOREIGN KEY (reviewed_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    reviewed_id int           NOT NULL,
+    FOREIGN KEY (reviewed_id) REFERENCES users (id) ON UPDATE CASCADE,
+    rental_id   int           NOT NULL,
+    FOREIGN KEY (rental_id) REFERENCES rentals (id) ON UPDATE CASCADE ON DELETE CASCADE,
     body        text          NOT NULL,
-    score       decimal(3, 2) NOT NULL
+    score       decimal(3, 2) NOT NULL,
+    created_at  timestamp     DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_review_per_rental_per_role (rental_id, reviewer_id)
 );

@@ -4,13 +4,14 @@ function fetch_shelter(PDO $db, int $userId): array
 {
     $stmt = $db->prepare('
         SELECT u.id, u.email, u.avatar_filename, u.is_deleted,
-               s.name, s.is_verified, s.location, s.description, s.rating, s.suspended_until
+               s.name, s.is_verified, s.location, s.description, s.rating, s.suspended_until, s.stripe_account_id
         FROM users u
         JOIN shelters s ON s.id = u.id
         WHERE u.id = :id
     ');
     $stmt->execute([':id' => $userId]);
     $row = $stmt->fetch();
+    if (!$row) error_response('NOT_FOUND', 404);
 
     $stmt2 = $db->prepare('SELECT filename FROM user_images WHERE user_id = :user_id');
     $stmt2->execute([':user_id' => $userId]);
@@ -26,8 +27,9 @@ function fetch_shelter(PDO $db, int $userId): array
         'is_verified'     => (bool) $row['is_verified'],
         'location'        => $row['location'],
         'description'     => $row['description'],
-        'rating'          => $row['rating'] !== null ? (float) $row['rating'] : null,
-        'suspended_until' => $row['suspended_until'],
+        'rating'            => $row['rating'] !== null ? (float) $row['rating'] : null,
+        'suspended_until'   => $row['suspended_until'],
+        'stripe_account_id' => $row['stripe_account_id'],
     ];
 }
 
@@ -42,6 +44,7 @@ function fetch_renter(PDO $db, int $userId): array
     ');
     $stmt->execute([':id' => $userId]);
     $row = $stmt->fetch();
+    if (!$row) error_response('NOT_FOUND', 404);
 
     $stmt2 = $db->prepare('SELECT filename FROM user_images WHERE user_id = :user_id');
     $stmt2->execute([':user_id' => $userId]);
@@ -73,6 +76,7 @@ function fetch_admin(PDO $db, int $userId): array
     ');
     $stmt->execute([':id' => $userId]);
     $row = $stmt->fetch();
+    if (!$row) error_response('NOT_FOUND', 404);
 
     $stmt2 = $db->prepare('SELECT filename FROM user_images WHERE user_id = :user_id');
     $stmt2->execute([':user_id' => $userId]);

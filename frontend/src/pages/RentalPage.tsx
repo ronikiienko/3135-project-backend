@@ -30,8 +30,8 @@ const RentalPage: React.FC = () => {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
   const [showConfirmForm, setShowConfirmForm] = useState(false);
-  const [suggestedBegins, setSuggestedBegins] = useState<Date | null>(null);
-  const [suggestedEnds, setSuggestedEnds] = useState<Date | null>(null);
+  const [suggestedBegins, setSuggestedBegins] = useState<string | null>(null);
+  const [suggestedEnds, setSuggestedEnds] = useState<string | null>(null);
 
   const fetchRental = () => {
     if (!id) return;
@@ -56,8 +56,8 @@ const RentalPage: React.FC = () => {
     setActionError(null);
     const result = await respondToRentalRequest(rental.id, {
       response: 'CONFIRM',
-      suggestedRentalBegins: suggestedBegins.toISOString(),
-      suggestedRentalEnds: suggestedEnds.toISOString(),
+      suggestedRentalBegins: new Date(suggestedBegins).toISOString(),
+      suggestedRentalEnds: new Date(suggestedEnds).toISOString(),
     });
     setActionLoading(false);
     if (result.error) {
@@ -284,7 +284,7 @@ const RentalPage: React.FC = () => {
                       placeholder="Pick date and time"
                       value={suggestedEnds}
                       onChange={setSuggestedEnds}
-                      minDate={suggestedBegins ?? new Date()}
+                      minDate={suggestedBegins ? new Date(suggestedBegins) : new Date()}
                     />
                     <Group>
                       <Button color="green" onClick={handleShelterConfirm} loading={actionLoading}>

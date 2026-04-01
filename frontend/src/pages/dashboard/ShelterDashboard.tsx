@@ -44,6 +44,9 @@ const ShelterDashboard: React.FC = () => {
   const openListings = listings.filter((l) => !l.is_closed);
   const closedListings = listings.filter((l) => l.is_closed);
   const isSuspended = shelter !== null && shelter.suspended_until !== null && new Date(shelter.suspended_until) > new Date();
+  const hasStripe = shelter !== null && !!shelter.stripe_account_id;
+  const isVerified = shelter !== null && shelter.is_verified;
+  const canCreateListing = hasStripe && isVerified && !isSuspended;
 
   return (
     <Container my={40}>
@@ -51,6 +54,16 @@ const ShelterDashboard: React.FC = () => {
         <Alert color="red" title="Account Suspended" mb="lg">
           Your account is suspended until {new Date(shelter!.suspended_until!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.
           {' '}You cannot create new listings, and your listings are hidden from renters. Active rentals are unaffected.
+        </Alert>
+      )}
+      {!isVerified && !isSuspended && (
+        <Alert color="blue" title="Account not verified" mb="lg">
+          Your account must be verified by an admin before you can create listings.
+        </Alert>
+      )}
+      {!hasStripe && isVerified && !isSuspended && (
+        <Alert color="orange" title="Stripe not connected" mb="lg">
+          You need to connect a Stripe account before creating listings. Go to <a href="#/shelter/account">your account page</a> to set it up.
         </Alert>
       )}
       {loading ? <Loader /> : (
@@ -110,7 +123,7 @@ const ShelterDashboard: React.FC = () => {
           <Stack gap="sm">
             <Group justify="space-between">
               <Title order={2}>Your Listings</Title>
-              <Button onClick={() => setModalOpen(true)}>Create Listing</Button>
+              <Button onClick={() => setModalOpen(true)} disabled={!canCreateListing}>Create Listing</Button>
             </Group>
             {openListings.length === 0 ? (
               <Text c="dimmed">No active listings. Create your first one!</Text>

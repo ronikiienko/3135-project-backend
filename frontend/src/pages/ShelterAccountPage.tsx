@@ -1,16 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Container, Title, Text, Stack, Badge, Avatar, Group, Image, SimpleGrid,
-  Loader, Alert, Paper, Button, TextInput, Textarea, ActionIcon,
+  Loader, Alert, Paper, Button, TextInput, Textarea, ActionIcon, Divider,
 } from '@mantine/core';
-import { getShelterMe, updateShelterProfile, Shelter } from '../api/shelter';
+import { getShelterMe, updateShelterProfile, connectStripeAccount, Shelter } from '../api/shelter';
 import { updateAvatar, addImages, deleteImage } from '../api/user';
 import { AVATARS_URL, PROFILE_IMAGES_URL } from '../api/config';
 import Topbar from '../components/Topbar';
 
 const ShelterAccountPage: React.FC = () => {
+  const hash = window.location.hash;
+  const stripeParam = hash.includes('?') ? new URLSearchParams('?' + hash.split('?')[1]).get('stripe') : null;
+
   const [shelter, setShelter] = useState<Shelter | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -152,6 +156,42 @@ const ShelterAccountPage: React.FC = () => {
                 </>
               )}
 
+              <Divider />
+              <Stack gap="xs">
+                <Group justify="space-between" align="center">
+                  <Stack gap={2}>
+                    <Text fw={500}>Stripe Payouts</Text>
+                    {shelter.stripe_account_id
+                      ? <Text size="sm" c="dimmed">Connected — payouts will be sent automatically after rentals complete.</Text>
+                      : <Text size="sm" c="dimmed">Not connected — you must connect a Stripe account before you can create listings.</Text>
+                    }
+                  </Stack>
+                  <Group gap="xs">
+                    {shelter.stripe_account_id
+                      ? <Badge color="green">Connected</Badge>
+                      : <Badge color="red">Not connected</Badge>
+                    }
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={stripeLoading}
+                      onClick={async () => {
+                        setStripeLoading(true);
+                        const result = await connectStripeAccount();
+                        setStripeLoading(false);
+                        if (result.url) window.location.href = result.url;
+                      }}
+                    >
+                      {shelter.stripe_account_id ? 'Update Stripe account' : 'Connect Stripe'}
+                    </Button>
+                  </Group>
+                </Group>
+                {stripeParam === 'success' && <Alert color="green">Stripe account connected successfully.</Alert>}
+                {stripeParam === 'incomplete' && <Alert color="orange">Stripe onboarding incomplete. Please try again.</Alert>}
+                {stripeParam === 'error' && <Alert color="red">Something went wrong with Stripe. Please try again.</Alert>}
+              </Stack>
+
+              <Divider />
               <Stack gap="xs">
                 <Group justify="space-between">
                   <Text fw={500}>Profile Images</Text>
