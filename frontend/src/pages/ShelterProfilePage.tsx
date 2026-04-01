@@ -69,6 +69,7 @@ const ShelterProfilePage: React.FC = () => {
                       : <Badge color="gray">Not verified</Badge>
                     }
                   </Group>
+                  <Text size="xs" c="dimmed">ID #{shelter.id}</Text>
                   <Group gap="xs">
                     <Button size="xs" variant="outline" onClick={() => navigate(`/messages/${shelter.id}`, { state: { correspondentName: shelter.name } })}>Message</Button>
                     {role === 'RENTER' && <Button size="xs" color="red" variant="outline" onClick={() => setReportOpen(true)}>Report</Button>}

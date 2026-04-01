@@ -121,6 +121,7 @@ const ShelterAccountPage: React.FC = () => {
                     <Title order={2}>{shelter.name}</Title>
                     {shelter.is_verified ? <Badge color="green">Verified</Badge> : <Badge color="gray">Not verified</Badge>}
                   </Group>
+                  <Text size="xs" c="dimmed">ID #{shelter.id}</Text>
                   <Text c="dimmed">{shelter.email}</Text>
                   {shelter.rating !== null && <Text size="sm" c="dimmed">Rating: {(shelter.rating * 5).toFixed(1)} / 5</Text>}
                 </Stack>

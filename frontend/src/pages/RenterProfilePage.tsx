@@ -65,6 +65,7 @@ const RenterProfilePage: React.FC = () => {
                     <Title order={2}>{renter.fName} {renter.lName}</Title>
                     <Badge color="teal">Renter</Badge>
                   </Group>
+                  <Text size="xs" c="dimmed">ID #{renter.id}</Text>
                   <Group gap="xs">
                     <Button size="xs" variant="outline" onClick={() => navigate(`/messages/${renter.id}`, { state: { correspondentName: `${renter.fName} ${renter.lName}` } })}>Message</Button>
                     {role === 'SHELTER' && <Button size="xs" color="red" variant="outline" onClick={() => setReportOpen(true)}>Report</Button>}

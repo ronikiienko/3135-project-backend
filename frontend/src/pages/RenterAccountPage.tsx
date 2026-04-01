@@ -120,6 +120,7 @@ const RenterAccountPage: React.FC = () => {
                 </Stack>
                 <Stack gap={4} style={{ flex: 1 }}>
                   <Title order={2}>{renter.fName} {renter.lName}</Title>
+                  <Text size="xs" c="dimmed">ID #{renter.id}</Text>
                   <Text c="dimmed">{renter.email}</Text>
                   {renter.rating !== null && <Text size="sm" c="dimmed">Rating: {(renter.rating * 5).toFixed(1)} / 5</Text>}
                 </Stack>
